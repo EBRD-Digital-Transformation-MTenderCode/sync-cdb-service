@@ -26,6 +26,12 @@ then
 ./yii budgets/get-updates
 fi
 
+if [[ $SERVICENAME == "budgets-events-creator" ]]
+then
+./yii migrate --migrationPath=@app/migrations/budgets --db=db_budgets --interactive=0
+./yii budgets/updates
+fi
+
 ####### tenders
 
 if [[ $SERVICENAME == "tenders-changed-list-getter" ]]

@@ -13,11 +13,12 @@ class Curl
      * CURL coverage function
      * @param string $url
      * @param string $method
+     * @param string $data_string
      * @param array $curlOptions
      * @return array
      * @throws HttpException
      */
-    public static function sendRequest(string $url, string $method, $curlOptions = [])
+    public static function sendRequest(string $url, string $method, $data_string = "", $curlOptions = [])
     {
         $result = ['code' => 0, 'headers' => [], 'body' => ''];
         $curl = curl_init();
@@ -25,6 +26,7 @@ class Curl
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($curl, CURLOPT_HEADER, true);
         // Gather additional optional options:
         foreach ($curlOptions as $key => $value) {
@@ -44,6 +46,7 @@ class Curl
         $split = explode("\n\r", $content, 2);
         // Parse response http code from headers:
         preg_match('/.+(\d{3})/', $split[0], $code);
+
         $result['code'] = (int)$code[1];
         $curlOptions = explode("\n", $split[0]);
         foreach ($curlOptions as $part) {
