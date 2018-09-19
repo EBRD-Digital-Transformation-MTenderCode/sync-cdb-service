@@ -13,6 +13,8 @@ class TendersList
 {
     CONST TABLE_NAME = "tenders_prz_changed_list";
 
+    ///////  list-getter
+
     /**
      * Get tenders list url with offset
      * @param string $offset
@@ -43,4 +45,35 @@ class TendersList
             DB::execute("INSERT INTO " . self::TABLE_NAME . " (tender_id, date_modified) VALUES ".implode(',', $values) . "  ON CONFLICT (tender_id) DO NOTHING", $params);
         }
     }
+
+    ///////  updates-getter
+
+    /**
+     * Getting a list of tenders
+     * @param int $limit
+     * @return array
+     */
+    public static function getTenders(int $limit = 25) {
+        return DB::fetchAll("SELECT * FROM " . self::TABLE_NAME . " LIMIT ?", [$limit]);
+    }
+
+    /**
+     * Delete record
+     * @param $tender_id
+     */
+    public static function deleteRecord($tender_id) {
+        DB::execute("DELETE FROM " . self::TABLE_NAME . " WHERE tender_id = ?", [$tender_id]);
+    }
+
+    /**
+     * Delete records
+     * @param array $arrIds
+     */
+    public static function deleteRecords(array $arrIds) {
+        foreach ($arrIds as &$item) {
+            self::deleteRecord($item['tender_id']);
+            unset($item);
+        }
+    }
+
 }
