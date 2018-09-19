@@ -33,3 +33,9 @@ then
 ./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans
 ./yii plans-prz/get-changed-list
 fi
+
+if [[ $SERVICENAME == "plans-prz-updates-getter" ]]
+then
+./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans
+./yii plans-prz/get-updates
+fi

@@ -13,6 +13,8 @@ class PlansList
 {
     CONST TABLE_NAME = "plans_prz_changed_list";
 
+    ///////  list-getter
+
     /**
      * Get plans list url with offset
      * @param string $offset
@@ -43,4 +45,34 @@ class PlansList
             DB::execute("INSERT INTO " . self::TABLE_NAME . " (plan_id, date_modified) VALUES ".implode(',', $values) . "  ON CONFLICT (plan_id) DO NOTHING", $params);
         }
     }
+
+    ///////  updates-getter
+    /**
+     * Getting a list of plans
+     * @param int $limit
+     * @return array
+     */
+    public static function getPlans(int $limit = 25) {
+        return DB::fetchAll("SELECT * FROM " . self::TABLE_NAME . " LIMIT ?", [$limit]);
+    }
+
+    /**
+     * Delete record
+     * @param $plan_id
+     */
+    public static function deleteRecord($plan_id) {
+        DB::execute("DELETE FROM " . self::TABLE_NAME . " WHERE plan_id = ?", [$plan_id]);
+    }
+
+    /**
+     * Delete records
+     * @param array $arrIds
+     */
+    public static function deleteRecords(array $arrIds) {
+        foreach ($arrIds as &$item) {
+            self::deleteRecord($item['plan_id']);
+            unset($item);
+        }
+    }
+
 }

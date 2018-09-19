@@ -13,3 +13,4 @@
 ./yii tenders/get-changed-list
 ./yii tenders-prz/get-changed-list
 ./yii plans-prz/get-changed-list
+./yii plans-prz/get-updates
