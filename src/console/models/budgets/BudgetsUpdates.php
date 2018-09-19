@@ -58,7 +58,7 @@ class BudgetsUpdates
             $result = $elastic->checkMapping();
             if ($result['code'] != 200) {
                 Yii::error("Elastic mapping error. Http-code: " . $result['code'], 'sync-info');
-                exit(0);
+                throw new HttpException(400, "Elastic mapping error. Http-code: " . $result['code']);
             }
         }
 
