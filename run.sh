@@ -34,6 +34,12 @@ then
 ./yii tenders/get-changed-list
 fi
 
+if [[ $SERVICENAME == "tenders-updates-getter" ]]
+then
+./yii migrate --migrationPath=@app/migrations/tenders --db=db_tenders --interactive=0
+./yii tenders/get-updates
+fi
+
 if [[ $SERVICENAME == "tenders-prz-changed-list-getter" ]]
 then
 ./yii migrate --migrationPath=@app/migrations/tenders_prz --db=db_tenders --interactive=0
