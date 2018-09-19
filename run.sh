@@ -9,13 +9,24 @@ php /var/www/service/init --env=Production --overwrite=y
 #/usr/sbin/nginx -g 'daemon off;'
 
 cd /var/www/service
-echo $SERVICENAME
+#cd src
+echo "SERVICE: " $SERVICENAME
+
+####### budgets
 
 if [[ $SERVICENAME == "budgets-changed-list-getter" ]]
 then
 ./yii migrate --migrationPath=@app/migrations/budgets --db=db_budgets --interactive=0
 ./yii budgets/get-changed-list
 fi
+
+if [[ $SERVICENAME == "budgets-updates-getter" ]]
+then
+./yii migrate --migrationPath=@app/migrations/budgets --db=db_budgets --interactive=0
+./yii budgets/get-updates
+fi
+
+####### tenders
 
 if [[ $SERVICENAME == "tenders-changed-list-getter" ]]
 then
@@ -28,6 +39,8 @@ then
 ./yii migrate --migrationPath=@app/migrations/tenders_prz --db=db_tenders --interactive=0
 ./yii tenders-prz/get-changed-list
 fi
+
+####### plans
 
 if [[ $SERVICENAME == "plans-prz-changed-list-getter" ]]
 then

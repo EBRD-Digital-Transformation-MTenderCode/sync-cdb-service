@@ -13,6 +13,8 @@ class BudgetsList
 {
     CONST TABLE_NAME = "budgets_changed_list";
 
+    ///////  list-getter
+
     /**
      * Get budgets list url with offset
      * @param string $offset
@@ -43,4 +45,35 @@ class BudgetsList
             DB::execute("INSERT INTO " . self::TABLE_NAME . " (ocid, date_modified) VALUES ".implode(',', $values) . "  ON CONFLICT (ocid) DO NOTHING", $params);
         }
     }
+
+    ///////  updates-getter
+
+    /**
+     * Getting a list of budgets
+     * @param int $limit
+     * @return array
+     */
+    public static function getBudgets(int $limit = 25) {
+        return DB::fetchAll("SELECT * FROM " . self::TABLE_NAME . " LIMIT ?", [$limit]);
+    }
+
+    /**
+     * Delete record
+     * @param $ocid
+     */
+    public static function deleteRecord($ocid) {
+        DB::execute("DELETE FROM " . self::TABLE_NAME . " WHERE ocid = ?", [$ocid]);
+    }
+
+    /**
+     * Delete records
+     * @param array $arrIds
+     */
+    public static function deleteRecords(array $arrIds) {
+        foreach ($arrIds as &$item) {
+            self::deleteRecord($item['ocid']);
+            unset($item);
+        }
+    }
+
 }
