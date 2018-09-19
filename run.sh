@@ -9,6 +9,7 @@ php /var/www/service/init --env=Production --overwrite=y
 #/usr/sbin/nginx -g 'daemon off;'
 
 cd /var/www/service
+echo $SERVICENAME
 
 if [[ $SERVICENAME == "budgets-changed-list-getter" ]]
 then
@@ -36,7 +37,6 @@ fi
 
 if [[ $SERVICENAME == "plans-prz-updates-getter" ]]
 then
-echo "test"
 ./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans --interactive=0
 ./yii plans-prz/get-updates
 fi
