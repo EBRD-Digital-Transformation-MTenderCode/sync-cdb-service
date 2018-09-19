@@ -16,8 +16,8 @@ class Elastic
      */
     public function __construct()
     {
-        $this->index = Yii::$app->params['elastic_index'] ?? "";
-        $this->type = Yii::$app->params['elastic_type'] ?? "";
+        $this->index = Yii::$app->params['elastic_budgets_index'] ?? "";
+        $this->type = Yii::$app->params['elastic_budgets_type'] ?? "";
         $this->url = Yii::$app->params['elastic_url'] ?? "";
         if (!$this->index || !$this->type || !$this->url) {
             Yii::error("Elastic params not set.", 'sync-info');

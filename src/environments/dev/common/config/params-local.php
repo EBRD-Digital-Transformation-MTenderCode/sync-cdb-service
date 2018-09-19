@@ -7,8 +7,10 @@ return [
     'plans_prz_url' => '{{environments_PLANS_PRZ_URL}}',
 
     'elastic_indexing' => '{{environments_ELASTIC_INDEXING}}',
-    'elastic_index' => '{{environments_ELASTIC_BUDGETS_INDEX}}',
-    'elastic_type' => '{{environments_ELASTIC_BUDGETS_TYPE}}',
+    'elastic_budgets_index' => '{{environments_ELASTIC_BUDGETS_INDEX}}',
+    'elastic_budgets_type' => '{{environments_ELASTIC_BUDGETS_TYPE}}',
+    'elastic_tenders_index' => '{{environments_ELASTIC_TENDERS_INDEX}}',
+    'elastic_tenders_type' => '{{environments_ELASTIC_TENDERS_TYPE}}',
     'elastic_url' => '{{environments_ELASTIC_URL}}',
 
     'sleep_delay_interval' => '{{environments_SLEEP_DELAY_INTERVAL}}',

@@ -1,22 +1,26 @@
 <?php
-namespace console\models\budgets;
+namespace console\models\tenders_prz;
 
 use Yii;
-use PDOException;
 use yii\web\HttpException;
+use PDOException;
+use ustudio\service_mandatory\components\elastic\ElasticComponent;
 
 /**
- * Class BudgetsUpdates
- * @package console\models\budgets
+ * Class TendersUpdates
+ * @package console\models\\tenders_prz
  */
-class BudgetsUpdates
+class TendersUpdates
 {
-    const TABLE_BUDGETS_UPDATES = 'budgets_updates';
-    const TABLE_BUDGETS = 'budgets';
+    const TABLE_TENDERS_UPDATES = 'tenders_prz_updates';
+    const TABLE_TENDERS = 'tenders';
+    const TABLE_CDU = 'cdu';
     const DEFAULT_COUNT = 30;
+    const CDU_ALIAS = 'mtender1';
 
     /**
-     * Export records from budgets_updates to budgets
+     * Export records from tenders_updates to tenders
+     * @throws \ustudio\service_mandatory\components\elastic\ForbiddenHttpException
      */
     public static function run()
     {
@@ -43,16 +47,21 @@ class BudgetsUpdates
     }
 
     /**
-     * Export budgets_updates one iteration
+     * Export tenders_updates one iteration
      * @param int $count
      * @throws HttpException
+     * @throws \ustudio\service_mandatory\components\elastic\ForbiddenHttpException
      */
     public static function handle($count = self::DEFAULT_COUNT)
     {
         $processed = 0;
         $delay = (int) Yii::$app->params['sleep_delay_interval'];
         $elastic_indexing = (bool) Yii::$app->params['elastic_indexing'];
-        $elastic = new Elastic();
+        $elastic = new ElasticComponent(
+            Yii::$app->params['elastic_url'],
+            Yii::$app->params['elastic_tenders_index'],
+            Yii::$app->params['elastic_tenders_type']
+        );
 
         if ($elastic_indexing) {
             $result = $elastic->checkMapping();
@@ -61,7 +70,9 @@ class BudgetsUpdates
             }
         }
 
-        $items = DB::fetchAll('SELECT * FROM ' . self::TABLE_BUDGETS_UPDATES . ' ORDER BY updated_at LIMIT ?', [$count]);
+        $items = DB::fetchAll('SELECT * FROM ' . self::TABLE_TENDERS_UPDATES . ' ORDER BY updated_at LIMIT ?', [$count]);
+        $cdu = DB::fetch('SELECT * FROM ' . self::TABLE_CDU . ' WHERE alias=?', [self::CDU_ALIAS]);
+        $cdu_id = $cdu['id'] ?? null;
 
         if (empty($items)) {
             Yii::info("Nothing to update.", 'sync-info');
@@ -74,38 +85,41 @@ class BudgetsUpdates
                 try {
                     DB::beginTransaction();
 
-                    self::handleDb($item);
+                    self::handleDb($item, $cdu_id);
 
                     if ($elastic_indexing) {
-                        $elastic->indexBudget($item);
+                        $elastic->indexTenderPrz($item, self::CDU_ALIAS);
                     }
 
-                    DB::execute('DELETE FROM ' . self::TABLE_BUDGETS_UPDATES . ' WHERE "ocid" = ?', [$item['ocid']]);
+                    DB::execute('DELETE FROM ' . self::TABLE_TENDERS_UPDATES . ' WHERE "tender_id" = ?', [$item['tender_id']]);
 
                     $processed++;
 
                     DB::commit();
                 } catch (\Exception $exception) {
                     DB::rollback();
+                    throw new $exception($exception->getMessage());
                 }
             }
 
-            Yii::info("Processed {$processed} budgets.", 'sync-info');
-            Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
-            sleep(1);
+            Yii::info("Processed {$processed} tenders.", 'sync-info');
         }
     }
 
-    private static function handleDb($item) {
-        $count = DB::rowCount('SELECT * FROM ' . self::TABLE_BUDGETS . ' WHERE ocid = ?', [$item['ocid']]);
+    /**
+     * Update tender data in db
+     * @param $item
+     * @param $cdu_id
+     */
+    private static function handleDb($item, $cdu_id) {
+        $count = DB::rowCount('SELECT * FROM ' . self::TABLE_TENDERS . ' WHERE tender_id = ?', [$item['tender_id']]);
 
         if ($count == 0) {
-            DB::execute('INSERT INTO ' . self::TABLE_BUDGETS . ' ("ocid", "response") VALUES (?, ?)', [$item['ocid'], $item['response']]);
+            DB::execute('INSERT INTO ' . self::TABLE_TENDERS . ' ("tender_id", "response", "cdu_id") VALUES (?, ?, ?)', [$item['tender_id'], $item['response'], $cdu_id]);
         }
 
         if ($count == 1) {
-            DB::execute('UPDATE ' . self::TABLE_BUDGETS . ' SET "response" = ? WHERE "ocid" = ?', [$item['response'], $item['ocid']]);
+            DB::execute('UPDATE ' . self::TABLE_TENDERS . ' SET "response" = ? WHERE "tender_id" = ?', [$item['response'], $item['tender_id']]);
         }
     }
-
 }
