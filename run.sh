@@ -24,18 +24,19 @@ fi
 
 if [[ $SERVICENAME == "tenders-prz-changed-list-getter" ]]
 then
-./yii migrate --migrationPath=@app/migrations/tenders_prz --db=db_tenders
+./yii migrate --migrationPath=@app/migrations/tenders_prz --db=db_tenders --interactive=0
 ./yii tenders-prz/get-changed-list
 fi
 
 if [[ $SERVICENAME == "plans-prz-changed-list-getter" ]]
 then
-./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans
+./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans --interactive=0
 ./yii plans-prz/get-changed-list
 fi
 
 if [[ $SERVICENAME == "plans-prz-updates-getter" ]]
 then
-./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans
+echo "test"
+./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans --interactive=0
 ./yii plans-prz/get-updates
 fi
