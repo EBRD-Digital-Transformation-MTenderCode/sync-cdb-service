@@ -11,6 +11,8 @@ return [
     'elastic_budgets_type' => '{{environments_ELASTIC_BUDGETS_TYPE}}',
     'elastic_tenders_index' => '{{environments_ELASTIC_TENDERS_INDEX}}',
     'elastic_tenders_type' => '{{environments_ELASTIC_TENDERS_TYPE}}',
+    'elastic_plans_index' => '{{environments_ELASTIC_PLANS_INDEX}}',
+    'elastic_plans_type' => '{{environments_ELASTIC_PLANS_TYPE}}',
     'elastic_url' => '{{environments_ELASTIC_URL}}',
 
     'sleep_delay_interval' => '{{environments_SLEEP_DELAY_INTERVAL}}',

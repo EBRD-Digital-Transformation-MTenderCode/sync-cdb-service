@@ -1,15 +1,15 @@
-##!/bin/bash
-#/usr/sbin/php-fpm
-#chmod -R 777 /var/run/php-fpm
-#
-#cd /var/www/service && php vendor/ustudio/service_mandatory/ConfigServiceController.php
-#php /var/www/service/init --env=Production --overwrite=y
-#
-##/bin/bash
-##/usr/sbin/nginx -g 'daemon off;'
-#
-#cd /var/www/service
-cd src
+#!/bin/bash
+/usr/sbin/php-fpm
+chmod -R 777 /var/run/php-fpm
+
+cd /var/www/service && php vendor/ustudio/service_mandatory/ConfigServiceController.php
+php /var/www/service/init --env=Production --overwrite=y
+
+#/bin/bash
+#/usr/sbin/nginx -g 'daemon off;'
+
+cd /var/www/service
+#cd src
 echo "SERVICE: " $SERVICENAME
 
 ####### budgets
@@ -82,4 +82,10 @@ if [[ $SERVICENAME == "plans-prz-updates-getter" ]]
 then
 ./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans --interactive=0
 ./yii plans-prz/get-updates
+fi
+
+if [[ $SERVICENAME == "plans-prz-events-creator" ]]
+then
+./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_tenders --interactive=0
+./yii plans-prz/updates
 fi
