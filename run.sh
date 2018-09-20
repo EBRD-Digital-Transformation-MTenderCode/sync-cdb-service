@@ -93,5 +93,6 @@ fi
 ####### elastic-search-settings
 if [[ $SERVICENAME == "plans-prz-events-creator" ]]
 then
+#!/bin/bash
 /usr/sbin/nginx -g 'daemon off;'
 fi
