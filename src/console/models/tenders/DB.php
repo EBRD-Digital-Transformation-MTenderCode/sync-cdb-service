@@ -84,6 +84,30 @@ class DB {
     }
 
     /**
+     * Provide PDO::beginTransaction()
+     * @return bool
+     */
+    public static function beginTransaction() {
+        return self::getInstance()->getConnect()->beginTransaction();
+    }
+
+    /**
+     * Provide PDO::commit()
+     * @return bool
+     */
+    public static function commit() {
+        return self::getInstance()->getConnect()->commit();
+    }
+
+    /**
+     * Provide PDO::rollBack()
+     * @return bool
+     */
+    public static function rollBack() {
+        return self::getInstance()->getConnect()->rollBack();
+    }
+
+    /**
      * @param $sql
      * @param $params
      * @return PDOStatement
