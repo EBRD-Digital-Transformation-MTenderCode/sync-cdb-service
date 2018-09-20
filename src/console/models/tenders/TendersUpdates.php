@@ -66,7 +66,6 @@ class TendersUpdates
         if ($elastic_indexing) {
             $result = $elastic->checkMapping();
             if ($result['code'] != 200) {
-                Yii::error("Elastic mapping error. Http-code: " . $result['code'], 'sync-info');
                 throw new HttpException(400, "Elastic mapping error. Http-code: " . $result['code']);
             }
         }
