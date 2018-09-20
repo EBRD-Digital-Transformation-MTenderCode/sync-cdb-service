@@ -26,7 +26,7 @@ return [
             'targets' => [
                 [
                     'class' => 'ustudio\service_mandatory\components\ConsoleLog',
-                    'categories' => ['sync-info'],
+                    'categories' => ['sync-info', 'console-msg'],
                     'exportInterval' => 1,
                     'logVars' => [],
                 ],
