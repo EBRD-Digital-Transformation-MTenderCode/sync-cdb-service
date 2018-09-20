@@ -398,7 +398,6 @@ class ElasticComponent
                 'buyerMainSectoralActivity' => $buyerMainSectoralActivity,
             ];
             $this->indexDoc($docArr, $docArr['id']);
-            die();
         }
     }
 
