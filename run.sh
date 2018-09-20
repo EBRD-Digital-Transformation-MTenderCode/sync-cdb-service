@@ -86,6 +86,6 @@ fi
 
 if [[ $SERVICENAME == "plans-prz-events-creator" ]]
 then
-./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_tenders --interactive=0
+./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans --interactive=0
 ./yii plans-prz/updates
 fi
