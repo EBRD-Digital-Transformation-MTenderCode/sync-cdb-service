@@ -131,7 +131,7 @@ class ReindexElasticController extends Controller
 
             $result = $elastic->tendersMapping();
 
-            if ((int)$result['code'] != 200) {
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
                 Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
                 exit(0);
             }
