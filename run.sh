@@ -89,3 +89,9 @@ then
 ./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans --interactive=0
 ./yii plans-prz/updates
 fi
+
+####### elastic-search-settings
+if [[ $SERVICENAME == "plans-prz-events-creator" ]]
+then
+/usr/sbin/nginx -g 'daemon off;'
+fi
