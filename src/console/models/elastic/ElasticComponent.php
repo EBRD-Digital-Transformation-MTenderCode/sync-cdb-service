@@ -396,7 +396,7 @@ class ElasticComponent
         $periodOfferFrom = $data['data']['tenderPeriod']['startDate'] ?? null;
         $periodOfferTo = $data['data']['tenderPeriod']['endDate'] ?? null;
         $periodAuctionFrom = $data['data']['auctionPeriod']['startDate'] ?? null;
-        $periodAuctionTo = $data['data']['auctionPeriod']['endDate'] ?? '';
+        $periodAuctionTo = $data['data']['auctionPeriod']['endDate'] ?? null;
         $periodAwardFrom = $data['data']['awardPeriod']['startDate'] ?? null;
         $periodAwardTo = $data['data']['awardPeriod']['endDate'] ?? null;
 
