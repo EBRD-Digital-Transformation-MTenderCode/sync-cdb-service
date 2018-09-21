@@ -172,6 +172,12 @@ class ElasticComponent
             '_all' => ['enabled' => false],
             'properties' => [
                 'id' => ['type' => 'keyword'],
+                'entityId' => ['type' => 'keyword'],
+                'procedureType' => ['type' => 'keyword'],
+                'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
+                'classifications' => ['type' => 'keyword'],
+                'periodEnquiryFrom' => ['type' => 'date'],
+                'periodEnquiryTo' => ['type' => 'date'],
                 'cdb' => ['type' => 'keyword'],
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
@@ -502,30 +508,44 @@ class ElasticComponent
      */
     public function indexPlanPrz($plan, $cdb) {
         $response = $plan['response'];
+//
+//        if (stripos($response, "Delivery")) {
+//            echo "<pre>" . print_r($response,1) . "</pre>"; die;
+//        }
+
         $data = json_decode($response, 1);
-        $id = $data['data']['id'];
+        $data = $data['data'];
+        $id = $data['id'];
+        $entityId = $data['planID'];
+        $procedureType = $data['tender']['procurementMethodType'] ?? '';
+        $amount = $data['budget']['amount'] ?? 0;
+        $classifications = $data['classification']['id'] ?? '';
         $titlesOrDescriptions = [];
 
-        if (!empty($data['data']['classification']['title'])) {
-            $titlesOrDescriptions[] = $data['data']['classification']['title'];
+        if (!empty($data['classification']['title'])) {
+            $titlesOrDescriptions[
+                $data['classification']['title']
+            ] = $data['classification']['title'];
         }
-        if (!empty($data['data']['classification']['description'])) {
-            $titlesOrDescriptions[] = $data['data']['classification']['description'];
+        if (!empty($data['classification']['description'])) {
+            $titlesOrDescriptions[
+                $data['classification']['description']
+            ] = $data['classification']['description'];
         }
-        if (isset($data['data']['lots']) && is_array($data['data']['lots'])) {
-            foreach ($data['data']['lots'] as $item) {
+        if (isset($data['lots']) && is_array($data['lots'])) {
+            foreach ($data['lots'] as $item) {
                 if (!empty(($item['title']))) {
-                    $titlesOrDescriptions[] = $item['title'];
+                    $titlesOrDescriptions[$item['title']] = $item['title'];
                 }
                 if (!empty($item['description'])) {
-                    $titlesOrDescriptions[] = $item['description'];
+                    $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
             }
         }
-        if (isset($data['data']['items']) && is_array($data['data']['items'])) {
-            foreach ($data['data']['items'] as $item) {
+        if (isset($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
                 if (!empty($item['description'])) {
-                    $titlesOrDescriptions[] = $item['description'];
+                    $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
             }
         }
@@ -533,8 +553,12 @@ class ElasticComponent
         $docArr = [
             'cdb'                        => $cdb,
             'id'                         => $id,
-            'titlesOrDescriptions'       => $titlesOrDescriptions,
-            'titlesOrDescriptionsStrict' => $titlesOrDescriptions,
+            'entityId'                   => $entityId,
+            'procedureType'              => $procedureType,
+            'amount'                     => $amount,
+            'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
+            'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
+            'classifications'            => $classifications,
         ];
         $this->indexDoc($docArr, $docArr['id']);
     }
