@@ -12,6 +12,10 @@ use common\components\Curl;
  */
 class ElasticComponent
 {
+    const DIVIDER = '-';
+    const MARK_TENDER = 'EV';
+    const ROLE_BUYER = 'buyer';
+
     private $index;
     private $type;
     private $url;
@@ -95,29 +99,37 @@ class ElasticComponent
             'dynamic' => 'strict',
             '_all' => ['enabled' => false],
             'properties' => [
+                'cdb' => ['type' => 'keyword'],
                 'id' => ['type' => 'keyword'],
                 'tenderId' => ['type' => 'keyword'],
                 'title' => ['type' => 'text'],
                 'description' => ['type' => 'text'],
-                'cdu-v' => ['type' => 'keyword'],
-                'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'buyerRegion' => ['type' => 'keyword'],
+                'deliveriesRegions' => ['type' => 'keyword'],
                 'procedureType' => ['type' => 'keyword'],
                 'procedureStatus' => ['type' => 'keyword'],
-                'budget' => ['type' => 'scaled_float', 'scaling_factor' => 100],
-                'classification' => ['type' => 'keyword'],
-                'publicationDate' => ['type' => 'date'],
-                'enquiryPeriodFrom' => ['type' => 'date'],
-                'enquiryPeriodTo' => ['type' => 'date'],
-                'tenderPeriodFrom' => ['type' => 'date'],
-                'tenderPeriodTo' => ['type' => 'date'],
-                'auctionPeriodFrom' => ['type' => 'date'],
-                'auctionPeriodTo' => ['type' => 'date'],
-                'awardPeriodFrom' => ['type' => 'date'],
-                'awardPeriodTo' => ['type' => 'date'],
+                'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
+                'currency' => ['type' => 'keyword'],
+                'classifications' => ['type' => 'keyword'],
+                'publishedDate' => ['type' => 'date'],
+                'periodDeliveryFrom' => ['type' => 'date'],
+                'periodDeliveryTo' => ['type' => 'date'],
+                'periodEnquiryFrom' => ['type' => 'date'],
+                'periodEnquiryTo' => ['type' => 'date'],
+                'periodOfferFrom' => ['type' => 'date'],
+                'periodOfferTo' => ['type' => 'date'],
+                'periodAuctionFrom' => ['type' => 'date'],
+                'periodAuctionTo' => ['type' => 'date'],
+                'periodAwardFrom' => ['type' => 'date'],
+                'periodAwardTo' => ['type' => 'date'],
                 'buyerName' => ['type' => 'text'],
-                'buyerCode' => ['type' => 'keyword'],
+                'buyersNames' => ['type' => 'text'],
+                'buyerIdentifier' => ['type' => 'keyword'],
+                'buyerType' => ['type' => 'keyword'],
+                'buyerMainGeneralActivity' => ['type' => 'keyword'],
+                'buyerMainSectoralActivity' => ['type' => 'keyword'],
             ],
         ];
         $jsonMap = json_encode($mapArr);
@@ -160,13 +172,12 @@ class ElasticComponent
             '_all' => ['enabled' => false],
             'properties' => [
                 'id' => ['type' => 'keyword'],
-                'cdu-v' => ['type' => 'keyword'],
+                'cdb' => ['type' => 'keyword'],
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
             ],
         ];
         $jsonMap = json_encode($mapArr);
-
 
         return $this->createMapping($jsonMap);
     }
@@ -175,24 +186,168 @@ class ElasticComponent
      * Index tender
      * @param $tender
      */
-    public function indexTender($tender, $cduV) {
+    public function indexTender($tender, $cdb) {
         $response = $tender['response'];
         $jsonArr = json_decode($response, 1);
         $records = $jsonArr['records'];
-        foreach ($records as $record) {
-            if ($record['ocid'] == $tender['tender_id']) {
-                $tender_id = $record['ocid'];
-                $title = ($record['compiledRelease']['tender']['title']) ?? "";
-                $description = ($record['compiledRelease']['tender']['description']) ?? "";
-                $docArr = [
-                    'tenderId' => $tender_id,
-                    'title' => $title,
-                    'description' => $description,
-                    'cdu-v' => $cduV,
-                ];
-                $this->indexDoc($docArr, $docArr['tenderId']);
+        $actualReleases = $jsonArr['actualReleases'];
+        $id = $tender['tender_id'];
+        $stageId = false;
+        $title = '';
+        $description = '';
+        $buyerRegion = '';
+        $buyerName = '';
+        $buyerIdentifier = '';
+        $buyerType = '';
+        $buyerMainGeneralActivity = '';
+        $buyerMainSectoralActivity = '';
+        $amount = 0;
+        $titlesOrDescriptions = [];
+        $deliveriesRegions = [];
+        $classifications = [];
+        $periodDeliveryFrom = [];
+        $periodDeliveryTo = [];
+        $buyersNames = [];
+
+        //find stage release id
+        foreach ($actualReleases as $actualRelease) {
+            if (strpos($actualRelease['ocid'], $tender['tender_id'] . self::DIVIDER . self::MARK_TENDER) !== false) {
+                $stageId = $actualRelease['ocid'];
                 break;
             }
+        }
+
+        $ms = [];
+        $stage = [];
+
+        //get stage and ms item
+        foreach ($records as $record) {
+            if ($record['ocid'] == $id) {
+                $ms = $record;
+            }
+
+            if ($record['ocid'] == $stageId) {
+                $stage = $record;
+            }
+        }
+
+        //create data array and index doc
+        if (!empty($ms) && !empty($stage)) {
+            if (!empty($ms['compiledRelease']['tender']['title'])) {
+                $title = $ms['compiledRelease']['tender']['title'];
+                $titlesOrDescriptions[$title] = $title;
+            }
+
+            if (!empty($ms['compiledRelease']['tender']['description'])) {
+                $description = $ms['compiledRelease']['tender']['description'];
+                $titlesOrDescriptions[$description] = $description;
+            }
+
+            $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
+            $procedureStatus = $ms['compiledRelease']['tender']['statusDetails'] ?? '';
+            $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
+            $publishedDate = $jsonArr['publishedDate'] ?? null;
+            $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
+            $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
+            $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
+            $periodOfferTo = $stage['compiledRelease']['tender']['tenderPeriod']['endDate'] ?? null;
+            $periodAwardFrom = $stage['compiledRelease']['tender']['awardPeriod']['startDate'] ?? null;
+            $periodAwardTo = $stage['compiledRelease']['tender']['awardPeriod']['endDate'] ?? null;
+
+            if (isset($ms['compiledRelease']['tender']['value']['amount'])) {
+                $amount = $ms['compiledRelease']['tender']['value']['amount'];
+            }
+
+            if (isset($ms['compiledRelease']['parties']) && is_array($ms['compiledRelease']['parties'])) {
+                foreach ($ms['compiledRelease']['parties'] as $part) {
+                    if (in_array(self::ROLE_BUYER, $part['roles'])) {
+                        $buyerRegion = $part['address']['addressDetails']['region']['description'] ?? '';
+
+                        if (!empty($part['name'])) {
+                            $buyerName = $part['name'];
+                            $buyersNames[$part['name']] = $part['name'];
+                        }
+
+                        if (!empty($part['identifier']['legalName'])) {
+                            $buyersNames[$part['identifier']['legalName']] = $part['identifier']['legalName'];
+                        }
+
+                        $buyerIdentifier = $part['identifier']['id'] ?? '';
+                        $buyerType = $part['details']['typeOfBuyer'] ?? '';
+                        $buyerMainGeneralActivity = $part['details']['mainGeneralActivity'] ?? '';
+                        $buyerMainSectoralActivity = $part['details']['mainSectoralActivity'] ?? '';
+                    }
+                }
+            }
+
+            if (isset($stage['compiledRelease']['tender']['lots']) && is_array($stage['compiledRelease']['tender']['lots'])) {
+                foreach ($stage['compiledRelease']['tender']['lots'] as $lot) {
+                    if (!empty($lot['title'])) {
+                        $titlesOrDescriptions[$lot['title']] = $lot['title'];
+                    }
+
+                    if (!empty($lot['description'])) {
+                        $titlesOrDescriptions[$lot['description']] = $lot['description'];
+                    }
+
+                    if (!empty($lot['placeOfPerformance']['address']['addressDetails']['region']['description'])) {
+                        $deliveriesRegions[$lot['placeOfPerformance']['address']['addressDetails']['region']['description']] = $lot['placeOfPerformance']['address']['addressDetails']['region']['description'];
+                    }
+
+                    if (!empty($lot['contractPeriod']['startDate'])) {
+                        $periodDeliveryFrom[$lot['contractPeriod']['startDate']] = $lot['contractPeriod']['startDate'];
+                    }
+
+                    if (!empty($lot['contractPeriod']['endDate'])) {
+                        $periodDeliveryTo[$lot['contractPeriod']['endDate']] = $lot['contractPeriod']['endDate'];
+                    }
+                }
+            }
+
+            if (isset($stage['compiledRelease']['tender']['items']) && is_array($stage['compiledRelease']['tender']['items'])) {
+                foreach ($stage['compiledRelease']['tender']['items'] as $item) {
+                    if (!empty($item['description'])) {
+                        $titlesOrDescriptions[$item['description']] = $item['description'];
+                    }
+
+                    if (!empty($item['classification']['id'])) {
+                        $classifications[$item['classification']['id']] = $item['classification']['id'];
+                    }
+                }
+            }
+
+            $docArr = [
+                'cdb'                       => $cdb,
+                'id'                        => $id,
+                'tenderId'                  => $id,
+                'title'                     => $title,
+                'description'               => $description,
+                'titlesOrDescriptions'      => array_values($titlesOrDescriptions),
+                'titlesOrDescriptionsStrict'=> array_values($titlesOrDescriptions),
+                'buyerRegion'               => $buyerRegion,
+                'deliveriesRegions'         => array_values($deliveriesRegions),
+                'procedureType'             => $procedureType,
+                'procedureStatus'           => $procedureStatus,
+                'amount'                    => $amount,
+                'currency'                  => $currency,
+                'classifications'           => array_values($classifications),
+                'publishedDate'             => $publishedDate,
+                'periodDeliveryFrom'        => array_values($periodDeliveryFrom),
+                'periodDeliveryTo'          => array_values($periodDeliveryTo),
+                'periodEnquiryFrom'         => $periodEnquiryFrom,
+                'periodEnquiryTo'           => $periodEnquiryTo,
+                'periodOfferFrom'           => $periodOfferFrom,
+                'periodOfferTo'             => $periodOfferTo,
+                'periodAwardFrom'           => $periodAwardFrom,
+                'periodAwardTo'             => $periodAwardTo,
+                'buyerName'                 => $buyerName,
+                'buyersNames'               => array_values($buyersNames),
+                'buyerIdentifier'           => $buyerIdentifier,
+                'buyerType'                 => $buyerType,
+                'buyerMainGeneralActivity'  => $buyerMainGeneralActivity,
+                'buyerMainSectoralActivity' => $buyerMainSectoralActivity,
+            ];
+            $this->indexDoc($docArr, $docArr['id']);
         }
     }
 
@@ -200,159 +355,124 @@ class ElasticComponent
      * Index prozorro tender
      * @param $tender
      */
-    public function indexTenderPrz($tender, $cduV) {
+    public function indexTenderPrz($tender, $cdb) {
         $response = $tender['response'];
         $data = json_decode($response, 1);
-        $titlesOrDescriptions = [];
-        $classification = [];
-        $buyerName = [];
-        $id = '';
+        $tenderId = $data['data']['id'];
         $title = '';
         $description = '';
-        $buyerRegion = '';
-        $procedureType = '';
-        $procedureStatus = '';
-        $budget = '';
-        $publicationDate = null;
-        $enquiryPeriodFrom = null;
-        $enquiryPeriodTo = null;
-        $tenderPeriodFrom = null;
-        $tenderPeriodTo = null;
-        $auctionPeriodFrom = null;
-        $auctionPeriodTo = null;
-        $awardPeriodFrom = null;
-        $awardPeriodTo = null;
-        $buyerCode = '';
-        $tenderId = $data['data']['id'];
+        $buyerName = '';
+        $amount = 0;
+        $titlesOrDescriptions = [];
+        $classifications = [];
+        $periodDeliveryFrom = [];
+        $periodDeliveryTo = [];
+        $buyersNames = [];
 
-        if (isset($data['data']['title']) && $data['data']['title']) {
+        if (!empty($data['data']['title'])) {
             $title = $data['data']['title'];
-            $titlesOrDescriptions[] = $title;
+            $titlesOrDescriptions[$title] = $title;
         }
 
-        if (isset($data['data']['description']) && $data['data']['description']) {
+        if (!empty($data['data']['description'])) {
             $description = $data['data']['description'];
-            $titlesOrDescriptions[] = $description;
+            $titlesOrDescriptions[$description] = $description;
         }
 
-        if (isset($data['data']['procuringEntity']['address']['region']) && $data['data']['procuringEntity']['address']['region']) {
-            $buyerRegion = $data['data']['procuringEntity']['address']['region'];
+        $id = $data['data']['tenderID'] ?? '';
+        $procedureType = $data['data']['procurementMethodType'] ?? '';
+        $procedureStatus = $data['data']['status'] ?? '';
+        $buyerRegion = $data['data']['procuringEntity']['address']['region'] ?? '';
+
+        if (isset($data['data']['value']['amount'])) {
+            $amount = $data['data']['value']['amount'];
         }
 
-        if (isset($data['data']['tenderID']) && $data['data']['tenderID']) {
-            $id = $data['data']['tenderID'];
+        $currency = $data['data']['value']['currency'] ?? '';
+
+        $publishedDate = $data['data']['enquiryPeriod']['startDate'] ?? null;
+        $periodEnquiryFrom = $data['data']['enquiryPeriod']['startDate'] ?? null;
+        $periodEnquiryTo = $data['data']['enquiryPeriod']['endDate'] ?? null;
+        $periodOfferFrom = $data['data']['tenderPeriod']['startDate'] ?? null;
+        $periodOfferTo = $data['data']['tenderPeriod']['endDate'] ?? null;
+        $periodAuctionFrom = $data['data']['auctionPeriod']['startDate'] ?? null;
+        $periodAuctionTo = $data['data']['auctionPeriod']['endDate'] ?? null;
+        $periodAwardFrom = $data['data']['awardPeriod']['startDate'] ?? null;
+        $periodAwardTo = $data['data']['awardPeriod']['endDate'] ?? null;
+
+        $buyerIdentifier = $data['data']['procuringEntity']['identifier']['id'] ?? '';
+
+        if (!empty($data['data']['procuringEntity']['name'])) {
+            $buyerName = $data['data']['procuringEntity']['name'];
+            $buyersNames[$data['data']['procuringEntity']['name']] = $data['data']['procuringEntity']['name'];
         }
 
-        if (isset($data['data']['procurementMethodType']) && $data['data']['procurementMethodType']) {
-            $procedureType = $data['data']['procurementMethodType'];
-        }
-
-        if (isset($data['data']['status']) && $data['data']['status']) {
-            $procedureStatus = $data['data']['status'];
-        }
-
-        if (isset($data['data']['value']['amount']) && $data['data']['value']['amount']) {
-            $budget = $data['data']['value']['amount'];
-        }
-
-        if (isset($data['data']['enquiryPeriod']['startDate']) && $data['data']['enquiryPeriod']['startDate']) {
-            $publicationDate = $data['data']['enquiryPeriod']['startDate'];
-        }
-
-        if (isset($data['data']['enquiryPeriod']['startDate']) && $data['data']['enquiryPeriod']['startDate']) {
-            $enquiryPeriodFrom = $data['data']['enquiryPeriod']['startDate'];
-        }
-
-        if (isset($data['data']['enquiryPeriod']['endDate']) && $data['data']['enquiryPeriod']['endDate']) {
-            $enquiryPeriodTo = $data['data']['enquiryPeriod']['endDate'];
-        }
-
-        if (isset($data['data']['tenderPeriod']['startDate']) && $data['data']['tenderPeriod']['startDate']) {
-            $tenderPeriodFrom = $data['data']['tenderPeriod']['startDate'];
-        }
-
-        if (isset($data['data']['tenderPeriod']['endDate']) && $data['data']['tenderPeriod']['endDate']) {
-            $tenderPeriodTo = $data['data']['tenderPeriod']['endDate'];
-        }
-
-        if (isset($data['data']['auctionPeriod']['startDate']) && $data['data']['auctionPeriod']['startDate']) {
-            $auctionPeriodFrom = $data['data']['auctionPeriod']['startDate'];
-        }
-
-        if (isset($data['data']['auctionPeriod']['endDate']) && $data['data']['auctionPeriod']['endDate']) {
-            $auctionPeriodTo = $data['data']['auctionPeriod']['endDate'];
-        }
-
-        if (isset($data['data']['awardPeriod']['startDate']) && $data['data']['awardPeriod']['startDate']) {
-            $awardPeriodFrom = $data['data']['awardPeriod']['startDate'];
-        }
-
-        if (isset($data['data']['awardPeriod']['endDate']) && $data['data']['awardPeriod']['endDate']) {
-            $awardPeriodTo = $data['data']['awardPeriod']['endDate'];
-        }
-
-        if (isset($data['data']['procuringEntity']['identifier']['id']) && $data['data']['procuringEntity']['identifier']['id']) {
-            $buyerCode = $data['data']['procuringEntity']['identifier']['id'];
-        }
-
-        if (isset($data['data']['procuringEntity']['name']) && $data['data']['procuringEntity']['name']) {
-            $buyerName[] = $data['data']['procuringEntity']['name'];
-        }
-
-        if (isset($data['data']['procuringEntity']['identifier']['legalName']) && $data['data']['procuringEntity']['identifier']['legalName']) {
-            $buyesName[] = $data['data']['procuringEntity']['identifier']['legalName'];
+        if (!empty($data['data']['procuringEntity']['identifier']['legalName'])) {
+            $buyersNames[$data['data']['procuringEntity']['identifier']['legalName']] = $data['data']['procuringEntity']['identifier']['legalName'];
         }
 
         if (isset($data['data']['lots']) && is_array($data['data']['lots'])) {
             foreach ($data['data']['lots'] as $lot) {
-                if (isset($lot['title']) && $lot['title']) {
-                    $titlesOrDescriptions[] = $lot['title'];
+                if (!empty($lot['title'])) {
+                    $titlesOrDescriptions[$lot['title']] = $lot['title'];
                 }
 
-                if (isset($lot['description']) && $lot['description']) {
-                    $titlesOrDescriptions[] = $lot['description'];
+                if (!empty($lot['description'])) {
+                    $titlesOrDescriptions[$lot['description']] = $lot['description'];
+                }
+
+                if (!empty($lot['deliveryDate']['startDate'])) {
+                    $periodDeliveryFrom[$lot['deliveryDate']['startDate']] = $lot['deliveryDate']['startDate'];
+                }
+
+                if (!empty($lot['deliveryDate']['endDate'])) {
+                    $periodDeliveryTo[$lot['deliveryDate']['endDate']] = $lot['deliveryDate']['endDate'];
                 }
             }
         }
 
         if (isset($data['data']['items']) && is_array($data['data']['items'])) {
             foreach ($data['data']['items'] as $item) {
-                if (isset($item['description']) && $item['description']) {
-                    $titlesOrDescriptions[] = $item['description'];
+                if (!empty($item['description'])) {
+                    $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
 
-                if (isset($item['classification']['id']) && $item['classification']['id']) {
-                    $classification[] = $item['classification']['id'];
+                if (!empty($item['classification']['id'])) {
+                    $classifications[$item['classification']['id']] = $item['classification']['id'];
                 }
             }
         }
 
         $docArr = [
-            'id'                   => $id,
-            'tenderId'             => $tenderId,
-            'title'                => $title,
-            'description'          => $description,
-            'cdu-v'                => $cduV,
-            'titlesOrDescriptions' => $titlesOrDescriptions,
-            'titlesOrDescriptionsStrict' => $titlesOrDescriptions,
-            'buyerRegion'          => $buyerRegion,
-            'procedureType'        => $procedureType,
-            'procedureStatus'      => $procedureStatus,
-            'budget'               => $budget,
-            'classification'       => $classification,
-            'publicationDate'      => $publicationDate,
-            'enquiryPeriodFrom'    => $enquiryPeriodFrom,
-            'enquiryPeriodTo'      => $enquiryPeriodTo,
-            'tenderPeriodFrom'     => $tenderPeriodFrom,
-            'tenderPeriodTo'       => $tenderPeriodTo,
-            'auctionPeriodFrom'    => $auctionPeriodFrom,
-            'auctionPeriodTo'      => $auctionPeriodTo,
-            'awardPeriodFrom'      => $awardPeriodFrom,
-            'awardPeriodTo'        => $awardPeriodTo,
-            'buyerName'            => $buyerName,
-            'buyerCode'            => $buyerCode,
+            'cdb'                        => $cdb,
+            'id'                         => $id,
+            'tenderId'                   => $tenderId,
+            'title'                      => $title,
+            'description'                => $description,
+            'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
+            'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
+            'buyerRegion'                => $buyerRegion,
+            'procedureType'              => $procedureType,
+            'procedureStatus'            => $procedureStatus,
+            'amount'                     => $amount,
+            'currency'                   => $currency,
+            'classifications'            => array_values($classifications),
+            'publishedDate'              => $publishedDate,
+            'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
+            'periodDeliveryTo'           => array_values($periodDeliveryTo),
+            'periodEnquiryFrom'          => $periodEnquiryFrom,
+            'periodEnquiryTo'            => $periodEnquiryTo,
+            'periodOfferFrom'            => $periodOfferFrom,
+            'periodOfferTo'              => $periodOfferTo,
+            'periodAuctionFrom'          => $periodAuctionFrom,
+            'periodAuctionTo'            => $periodAuctionTo,
+            'periodAwardFrom'            => $periodAwardFrom,
+            'periodAwardTo'              => $periodAwardTo,
+            'buyerName'                  => $buyerName,
+            'buyersNames'                => array_values($buyersNames),
+            'buyerIdentifier'            => $buyerIdentifier,
         ];
-        $this->indexDoc($docArr, $docArr['tenderId']);
+        $this->indexDoc($docArr, $docArr['id']);
     }
 
     /**
@@ -378,9 +498,9 @@ class ElasticComponent
     /**
      * Index prozorro plan
      * @param $plan
-     * @param $cduV
+     * @param $cdb
      */
-    public function indexPlanPrz($plan, $cduV) {
+    public function indexPlanPrz($plan, $cdb) {
         $response = $plan['response'];
         $data = json_decode($response, 1);
         $id = $data['data']['id'];
@@ -411,8 +531,8 @@ class ElasticComponent
         }
 
         $docArr = [
+            'cdb'                        => $cdb,
             'id'                         => $id,
-            'cdu-v'                      => $cduV,
             'titlesOrDescriptions'       => $titlesOrDescriptions,
             'titlesOrDescriptionsStrict' => $titlesOrDescriptions,
         ];
