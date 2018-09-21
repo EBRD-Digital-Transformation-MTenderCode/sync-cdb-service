@@ -38,7 +38,7 @@ class MappingElasticController extends Controller
         $elastic->dropIndex();
         $result = $elastic->budgetsMapping();
 
-        if ((int)$result['code'] != 200) {
+        if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
             Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
             exit(0);
         }
@@ -67,8 +67,8 @@ class MappingElasticController extends Controller
 
         $result = $elastic->tendersMapping();
 
-        if ((int)$result['code'] != 200) {
-            Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
+        if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
+            Yii::error("Elastic mapping " . $elastic_index . " error", 'c   onsole-msg');
             exit(0);
         }
 
@@ -96,7 +96,7 @@ class MappingElasticController extends Controller
 
         $result = $elastic->plansMapping();
 
-        if ((int)$result['code'] != 200) {
+        if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
             Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
             exit(0);
         }

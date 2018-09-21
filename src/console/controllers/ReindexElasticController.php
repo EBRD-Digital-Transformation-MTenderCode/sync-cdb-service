@@ -94,7 +94,7 @@ class ReindexElasticController extends Controller
 
             $result = $elastic->budgetsMapping();
 
-            if ((int)$result['code'] != 200) {
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
                 Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
                 exit(0);
             }
@@ -170,7 +170,7 @@ class ReindexElasticController extends Controller
             }
 
             $result = $elastic->plansMapping();
-            if ((int)$result['code'] != 200) {
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
                 Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
                 exit(0);
             }
