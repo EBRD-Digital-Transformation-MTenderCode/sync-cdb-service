@@ -3,8 +3,8 @@ namespace console\models\tenders_prz;
 
 use Yii;
 use yii\web\HttpException;
+use console\models\elastic\ElasticComponent;
 use PDOException;
-use ustudio\service_mandatory\components\elastic\ElasticComponent;
 
 /**
  * Class TendersUpdates
