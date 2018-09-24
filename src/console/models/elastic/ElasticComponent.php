@@ -172,9 +172,20 @@ class ElasticComponent
             '_all' => ['enabled' => false],
             'properties' => [
                 'id' => ['type' => 'keyword'],
+                'entityId' => ['type' => 'keyword'],
+                'procedureType' => ['type' => 'keyword'],
+                'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
+                'classifications' => ['type' => 'keyword'],
+                'periodEnquiryFrom' => ['type' => 'date'],
+                'periodEnquiryTo' => ['type' => 'date'],
                 'cdb' => ['type' => 'keyword'],
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                'periodTenderFrom' => ['type' => 'date'],
+                'periodDeliveryFrom' => ['type' => 'date'],
+                'periodDeliveryTo' => ['type' => 'date'],
+                'buyersNames' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                'buyerIdentifier' => ['type' => 'keyword'],
             ],
         ];
         $jsonMap = json_encode($mapArr);
@@ -503,39 +514,88 @@ class ElasticComponent
      */
     public function indexPlanPrz($plan, $cdb) {
         $response = $plan['response'];
-        $data = json_decode($response, 1);
-        $id = $data['data']['id'];
-        $titlesOrDescriptions = [];
 
-        if (!empty($data['data']['classification']['title'])) {
-            $titlesOrDescriptions[] = $data['data']['classification']['title'];
+        $data = json_decode($response, 1);
+        $data = $data['data'];
+        $id = $data['id'];
+        $periodDeliveryFrom = [];
+        $periodDeliveryTo = [];
+
+//        if (stripos($response, "Delivery")) {
+//            //echo "<pre>" . print_r($plan['id'],1) . "</pre>";
+//            echo print_r($plan['id'],1) . "\n";
+//        }
+
+        $entityId = $data['planID'];
+        $procedureType = $data['tender']['procurementMethodType'] ?? '';
+        $amount = $data['budget']['amount'] ?? 0;
+        $classifications = $data['classification']['id'] ?? '';
+        $titlesOrDescriptions = [];
+        $buyersNames = [];
+
+        if (!empty($data['classification']['title'])) {
+            $titlesOrDescriptions[
+                $data['classification']['title']
+            ] = $data['classification']['title'];
         }
-        if (!empty($data['data']['classification']['description'])) {
-            $titlesOrDescriptions[] = $data['data']['classification']['description'];
+        if (!empty($data['classification']['description'])) {
+            $titlesOrDescriptions[
+                $data['classification']['description']
+            ] = $data['classification']['description'];
         }
-        if (isset($data['data']['lots']) && is_array($data['data']['lots'])) {
-            foreach ($data['data']['lots'] as $item) {
+        if (isset($data['lots']) && is_array($data['lots'])) {
+            foreach ($data['lots'] as $item) {
                 if (!empty(($item['title']))) {
-                    $titlesOrDescriptions[] = $item['title'];
+                    $titlesOrDescriptions[$item['title']] = $item['title'];
                 }
                 if (!empty($item['description'])) {
-                    $titlesOrDescriptions[] = $item['description'];
+                    $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
             }
         }
-        if (isset($data['data']['items']) && is_array($data['data']['items'])) {
-            foreach ($data['data']['items'] as $item) {
+        if (isset($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
                 if (!empty($item['description'])) {
-                    $titlesOrDescriptions[] = $item['description'];
+                    $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
+
+                if (!empty($item['deliveryDate']['startDate'])) {
+                    $periodDeliveryFrom[$item['deliveryDate']['startDate']] = $item['deliveryDate']['startDate'];
+                }
+
+                if (!empty($item['deliveryDate']['endDate'])) {
+                    $periodDeliveryTo[$item['deliveryDate']['endDate']] = $item['deliveryDate']['endDate'];
+                }
+
             }
         }
+
+        $periodTenderStartDate = $data['tender']['tenderPeriod']['startDate'] ?? null;
+
+        if (!empty($data['procuringEntity']['name'])) {
+            $buyersNames[$data['procuringEntity']['name']] = $data['procuringEntity']['name'];
+        }
+
+        if (!empty($data['procuringEntity']['identifier']['legalName'])) {
+            $buyersNames[$data['procuringEntity']['identifier']['legalName']] = $data['procuringEntity']['identifier']['legalName'];
+        }
+
+        $buyerIdentifier = $data['procuringEntity']['identifier']['id'] ?? '';
 
         $docArr = [
             'cdb'                        => $cdb,
             'id'                         => $id,
-            'titlesOrDescriptions'       => $titlesOrDescriptions,
-            'titlesOrDescriptionsStrict' => $titlesOrDescriptions,
+            'entityId'                   => $entityId,
+            'procedureType'              => $procedureType,
+            'amount'                     => $amount,
+            'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
+            'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
+            'classifications'            => $classifications,
+            'periodTenderFrom'           => $periodTenderStartDate,
+            'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
+            'periodDeliveryTo'           => array_values($periodDeliveryTo),
+            'buyersNames'                => array_values($buyersNames),
+            'buyerIdentifier'            => $buyerIdentifier,
         ];
         $this->indexDoc($docArr, $docArr['id']);
     }
