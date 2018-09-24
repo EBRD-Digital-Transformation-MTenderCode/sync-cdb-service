@@ -101,7 +101,7 @@ class ElasticComponent
             'properties' => [
                 'cdb' => ['type' => 'keyword'],
                 'id' => ['type' => 'keyword'],
-                'tenderId' => ['type' => 'keyword'],
+                'entityId' => ['type' => 'keyword'],
                 'title' => ['type' => 'text'],
                 'description' => ['type' => 'text'],
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
@@ -192,6 +192,7 @@ class ElasticComponent
         $records = $jsonArr['records'];
         $actualReleases = $jsonArr['actualReleases'];
         $id = $tender['tender_id'];
+        $releasePackage = json_decode($tender['release_package'], 1);
         $stageId = false;
         $title = '';
         $description = '';
@@ -246,7 +247,7 @@ class ElasticComponent
             $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
             $procedureStatus = $ms['compiledRelease']['tender']['statusDetails'] ?? '';
             $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
-            $publishedDate = $jsonArr['publishedDate'] ?? null;
+            $publishedDate = $releasePackage['publishedDate'] ?? null;
             $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
             $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
             $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
@@ -319,7 +320,7 @@ class ElasticComponent
             $docArr = [
                 'cdb'                       => $cdb,
                 'id'                        => $id,
-                'tenderId'                  => $id,
+                'entityId'                  => $id,
                 'title'                     => $title,
                 'description'               => $description,
                 'titlesOrDescriptions'      => array_values($titlesOrDescriptions),
@@ -358,7 +359,7 @@ class ElasticComponent
     public function indexTenderPrz($tender, $cdb) {
         $response = $tender['response'];
         $data = json_decode($response, 1);
-        $tenderId = $data['data']['id'];
+        $id = $data['data']['id'];
         $title = '';
         $description = '';
         $buyerName = '';
@@ -379,7 +380,7 @@ class ElasticComponent
             $titlesOrDescriptions[$description] = $description;
         }
 
-        $id = $data['data']['tenderID'] ?? '';
+        $entityId = $data['data']['tenderID'] ?? '';
         $procedureType = $data['data']['procurementMethodType'] ?? '';
         $procedureStatus = $data['data']['status'] ?? '';
         $buyerRegion = $data['data']['procuringEntity']['address']['region'] ?? '';
@@ -446,7 +447,7 @@ class ElasticComponent
         $docArr = [
             'cdb'                        => $cdb,
             'id'                         => $id,
-            'tenderId'                   => $tenderId,
+            'entityId'                   => $entityId,
             'title'                      => $title,
             'description'                => $description,
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),

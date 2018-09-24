@@ -3,8 +3,8 @@ namespace console\models\tenders;
 
 use Yii;
 use yii\web\HttpException;
+use console\models\elastic\ElasticComponent;
 use PDOException;
-use ustudio\service_mandatory\components\elastic\ElasticComponent;
 
 /**
  * Class TendersUpdates
@@ -115,11 +115,11 @@ class TendersUpdates
         $count = DB::rowCount('SELECT * FROM ' . self::TABLE_TENDERS . ' WHERE tender_id = ?', [$item['tender_id']]);
 
         if ($count == 0) {
-            DB::execute('INSERT INTO ' . self::TABLE_TENDERS . ' ("tender_id", "response", "cdu_id") VALUES (?, ?, ?)', [$item['tender_id'], $item['response'], $cdu_id]);
+            DB::execute('INSERT INTO ' . self::TABLE_TENDERS . ' ("tender_id", "response", "release_package", "cdu_id") VALUES (?, ?, ?, ?)', [$item['tender_id'], $item['response'], $item['release_package'], $cdu_id]);
         }
 
         if ($count == 1) {
-            DB::execute('UPDATE ' . self::TABLE_TENDERS . ' SET "response" = ? WHERE "tender_id" = ?', [$item['response'], $item['tender_id']]);
+            DB::execute('UPDATE ' . self::TABLE_TENDERS . ' SET "response" = ?, "release_package" = ? WHERE "tender_id" = ?', [$item['response'], $item['release_package'], $item['tender_id']]);
         }
     }
 }

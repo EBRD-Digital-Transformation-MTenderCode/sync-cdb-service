@@ -1,10 +1,10 @@
 <?php
 namespace console\models\plans_prz;
 
-use ustudio\service_mandatory\components\elastic\ElasticComponent;
 use Yii;
-use PDOException;
 use yii\web\HttpException;
+use console\models\elastic\ElasticComponent;
+use PDOException;
 
 /**
  * Class PlansUpdates
