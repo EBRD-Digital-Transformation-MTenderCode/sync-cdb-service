@@ -181,6 +181,11 @@ class ElasticComponent
                 'cdb' => ['type' => 'keyword'],
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                'periodTenderFrom' => ['type' => 'date'],
+                'periodDeliveryFrom' => ['type' => 'date'],
+                'periodDeliveryTo' => ['type' => 'date'],
+                'buyersNames' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                'buyerIdentifier' => ['type' => 'keyword'],
             ],
         ];
         $jsonMap = json_encode($mapArr);
@@ -508,19 +513,24 @@ class ElasticComponent
      */
     public function indexPlanPrz($plan, $cdb) {
         $response = $plan['response'];
-//
-//        if (stripos($response, "Delivery")) {
-//            echo "<pre>" . print_r($response,1) . "</pre>"; die;
-//        }
 
         $data = json_decode($response, 1);
         $data = $data['data'];
         $id = $data['id'];
+        $periodDeliveryFrom = [];
+        $periodDeliveryTo = [];
+
+//        if (stripos($response, "Delivery")) {
+//            //echo "<pre>" . print_r($plan['id'],1) . "</pre>";
+//            echo print_r($plan['id'],1) . "\n";
+//        }
+
         $entityId = $data['planID'];
         $procedureType = $data['tender']['procurementMethodType'] ?? '';
         $amount = $data['budget']['amount'] ?? 0;
         $classifications = $data['classification']['id'] ?? '';
         $titlesOrDescriptions = [];
+        $buyersNames = [];
 
         if (!empty($data['classification']['title'])) {
             $titlesOrDescriptions[
@@ -547,8 +557,29 @@ class ElasticComponent
                 if (!empty($item['description'])) {
                     $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
+
+                if (!empty($item['deliveryDate']['startDate'])) {
+                    $periodDeliveryFrom[$item['deliveryDate']['startDate']] = $item['deliveryDate']['startDate'];
+                }
+
+                if (!empty($item['deliveryDate']['endDate'])) {
+                    $periodDeliveryTo[$item['deliveryDate']['endDate']] = $item['deliveryDate']['endDate'];
+                }
+
             }
         }
+
+        $periodTenderStartDate = $data['tender']['tenderPeriod']['startDate'] ?? null;
+
+        if (!empty($data['procuringEntity']['name'])) {
+            $buyersNames[$data['procuringEntity']['name']] = $data['procuringEntity']['name'];
+        }
+
+        if (!empty($data['procuringEntity']['identifier']['legalName'])) {
+            $buyersNames[$data['procuringEntity']['identifier']['legalName']] = $data['procuringEntity']['identifier']['legalName'];
+        }
+
+        $buyerIdentifier = $data['procuringEntity']['identifier']['id'] ?? '';
 
         $docArr = [
             'cdb'                        => $cdb,
@@ -559,6 +590,11 @@ class ElasticComponent
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
             'classifications'            => $classifications,
+            'periodTenderFrom'           => $periodTenderStartDate,
+            'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
+            'periodDeliveryTo'           => array_values($periodDeliveryTo),
+            'buyersNames'                => array_values($buyersNames),
+            'buyerIdentifier'            => $buyerIdentifier,
         ];
         $this->indexDoc($docArr, $docArr['id']);
     }
