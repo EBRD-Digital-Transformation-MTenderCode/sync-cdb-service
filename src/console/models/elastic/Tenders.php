@@ -4,6 +4,7 @@ namespace console\models\elastic;
 use Yii;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
+use console\models\tenders\Tender;
 use PDOException;
 
 /**
@@ -49,7 +50,17 @@ class Tenders
                 foreach ($tenders as $tender) {
                     $cduV = $cdu[$tender['cdu_id']] ?? '';
                     if ($cduV != self::TYPE_PROZORRO) {
-                        $elastic->indexTender($tender, $cduV);
+                        $decodedItem = Tender::decode($tender);
+
+                        switch ($decodedItem['type']) {
+                            case Tender::MARK_TENDER:
+                                    $elastic->indexTender($decodedItem, $cduV);
+                                break;
+                            case Tender::MARK_PLAN:
+                            case Tender::MARK_CONTRACT:
+                            default:
+                                break;
+                        }
                     } else {
                         $elastic->indexTenderPrz($tender, $cduV);
                     }
