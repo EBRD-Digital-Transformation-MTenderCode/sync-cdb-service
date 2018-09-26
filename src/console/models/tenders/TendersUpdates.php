@@ -85,10 +85,21 @@ class TendersUpdates
                 try {
                     DB::beginTransaction();
 
-                    self::handleDb($item, $cdu_id);
+                    $decodedItem = Tender::decode($item);
 
-                    if ($elastic_indexing) {
-                        $elastic->indexTender($item, self::CDU_ALIAS);
+                    switch ($decodedItem['type']) {
+                        case Tender::MARK_TENDER:
+                            self::handleDb($decodedItem, $cdu_id);
+
+                            if ($elastic_indexing) {
+                                $elastic->indexTender($decodedItem, self::CDU_ALIAS);
+                            }
+
+                            break;
+                        case Tender::MARK_PLAN:
+                        case Tender::MARK_CONTRACT:
+                        default:
+                            break;
                     }
 
                     DB::execute('DELETE FROM ' . self::TABLE_TENDERS_UPDATES . ' WHERE "tender_id" = ?', [$item['tender_id']]);

@@ -12,8 +12,6 @@ use common\components\Curl;
  */
 class ElasticComponent
 {
-    const DIVIDER = '-';
-    const MARK_TENDER = 'EV';
     const ROLE_BUYER = 'buyer';
 
     private $index;
@@ -198,13 +196,8 @@ class ElasticComponent
      * @param $tender
      */
     public function indexTender($tender, $cdb) {
-        $response = $tender['response'];
-        $jsonArr = json_decode($response, 1);
-        $records = $jsonArr['records'];
-        $actualReleases = $jsonArr['actualReleases'];
         $id = $tender['tender_id'];
-        $releasePackage = json_decode($tender['release_package'], 1);
-        $stageId = false;
+        $stageId = $tender['stageId'];
         $title = '';
         $description = '';
         $buyerRegion = '';
@@ -221,19 +214,11 @@ class ElasticComponent
         $periodDeliveryTo = [];
         $buyersNames = [];
 
-        //find stage release id
-        foreach ($actualReleases as $actualRelease) {
-            if (strpos($actualRelease['ocid'], $tender['tender_id'] . self::DIVIDER . self::MARK_TENDER) !== false) {
-                $stageId = $actualRelease['ocid'];
-                break;
-            }
-        }
-
         $ms = [];
         $stage = [];
 
         //get stage and ms item
-        foreach ($records as $record) {
+        foreach ($tender['records'] as $record) {
             if ($record['ocid'] == $id) {
                 $ms = $record;
             }
@@ -258,7 +243,7 @@ class ElasticComponent
             $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
             $procedureStatus = $ms['compiledRelease']['tender']['statusDetails'] ?? '';
             $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
-            $publishedDate = $releasePackage['publishedDate'] ?? null;
+            $publishedDate = $tender['releasePackage']['publishedDate'] ?? null;
             $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
             $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
             $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
