@@ -2,6 +2,7 @@
 namespace console\controllers;
 
 use console\models\elastic\Budgets;
+use console\models\elastic\Contracts;
 use console\models\elastic\ElasticComponent;
 use console\models\elastic\Plans;
 use console\models\elastic\Tenders;
@@ -74,6 +75,21 @@ class ReindexElasticController extends Controller
         }
 
         Yii::info("Elastic indexing Plans is complete", 'console-msg');
+    }
+
+    /**
+     *  reindex Contracts
+     */
+    public function actionContracts()
+    {
+        try {
+            $this->indexContracts();
+        } catch (HttpException $e) {
+            Yii::error($e->getMessage(), 'console-msg');
+            exit(0);
+        }
+
+        Yii::info("Elastic indexing Contracts is complete", 'console-msg');
     }
 
     /**
@@ -214,8 +230,8 @@ class ReindexElasticController extends Controller
                 Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
                 exit(0);
             }
-            $plans = new Plans();
-            $plans->indexItemsToElastic();
+            $contracts = new Contracts();
+            $contracts->indexItemsToElastic();
 
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');

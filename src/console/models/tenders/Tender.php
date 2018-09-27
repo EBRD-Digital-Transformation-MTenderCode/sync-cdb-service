@@ -107,7 +107,7 @@ class Tender
 
         foreach ($responseArray['actualReleases'] as $actualRelease) {
             $type = explode(self::DIVIDER, substr($actualRelease['ocid'], strlen($item['tender_id'])))[1];
-
+            $item['item_id'] = $item['tender_id'];
             if (in_array($type, self::MARKS)) {
                 $item['type'] = $type;
                 $item['stageId'] = $actualRelease['ocid'];

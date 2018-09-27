@@ -1,6 +1,7 @@
 <?php
 namespace console\models\elastic;
 
+use console\models\contracts\Contract;
 use Yii;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
@@ -53,9 +54,11 @@ class Contracts
                 foreach ($items as $item) {
                     $cduV = $cdu[$item['cdu_id']] ?? '';
                     if ($cduV != self::TYPE_PROZORRO) {
-
+                        $decodedItem = Contract::decode($item);
+                        $elastic->indexContract($decodedItem, $cduV);
                     } else {
-                        $elastic->indexContract($item, $cduV);
+                        // @todo:
+                        //$elastic->indexContract($item, $cduV);
                     }
                 }
                 $transaction->commit();

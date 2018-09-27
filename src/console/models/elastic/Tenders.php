@@ -51,16 +51,7 @@ class Tenders
                     $cduV = $cdu[$tender['cdu_id']] ?? '';
                     if ($cduV != self::TYPE_PROZORRO) {
                         $decodedItem = Tender::decode($tender);
-
-                        switch ($decodedItem['type']) {
-                            case Tender::MARK_TENDER:
-                                    $elastic->indexTender($decodedItem, $cduV);
-                                break;
-                            case Tender::MARK_PLAN:
-                            case Tender::MARK_CONTRACT:
-                            default:
-                                break;
-                        }
+                        $elastic->indexTender($decodedItem, $cduV);
                     } else {
                         $elastic->indexTenderPrz($tender, $cduV);
                     }

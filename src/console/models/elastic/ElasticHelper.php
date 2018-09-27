@@ -89,7 +89,7 @@ class ElasticHelper
      * @return array|null
      */
     public static function prepareTenderToElastic($tender, $cdb) {
-        $id = $tender['tender_id'];
+        $id = $tender['item_id'];
         $stageId = $tender['stageId'];
         $title = '';
         $description = '';
@@ -456,7 +456,7 @@ class ElasticHelper
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
             'classifications'            => $classifications,
-            'periodTenderFrom'           => $periodTenderStartDate,
+            'periodEnquiryFrom'          => $periodTenderStartDate,
             'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
             'periodDeliveryTo'           => array_values($periodDeliveryTo),
             'buyersNames'                => array_values($buyersNames),
