@@ -21,6 +21,7 @@ class MappingElasticController extends Controller
         $this->actionBudgets();
         $this->actionTenders();
         $this->actionPlans();
+        $this->actionContracts();
 
         Yii::info("Elastic mapping is complete", 'console-msg');
     }
