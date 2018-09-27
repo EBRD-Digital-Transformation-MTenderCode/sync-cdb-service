@@ -5,6 +5,8 @@ use Yii;
 use yii\web\HttpException;
 use console\models\elastic\ElasticComponent;
 use PDOException;
+use console\models\plans\DB as PlansDB;
+use console\models\contracts\DB as contractsDB;
 
 /**
  * Class TendersUpdates
@@ -14,13 +16,14 @@ class TendersUpdates
 {
     const TABLE_TENDERS_UPDATES = 'tenders_updates';
     const TABLE_TENDERS = 'tenders';
+    const TABLE_PLANS = 'plans';
+    const TABLE_CONTRACTS = 'contracts';
     const TABLE_CDU = 'cdu';
     const DEFAULT_COUNT = 30;
     const CDU_ALIAS = 'mtender2';
 
     /**
      * Export records from tenders_updates to tenders
-     * @throws \ustudio\service_mandatory\components\elastic\ForbiddenHttpException
      */
     public static function run()
     {
@@ -50,24 +53,47 @@ class TendersUpdates
      * Export tenders_updates one iteration
      * @param int $count
      * @throws HttpException
-     * @throws \ustudio\service_mandatory\components\elastic\ForbiddenHttpException
      */
     public static function handle($count = self::DEFAULT_COUNT)
     {
-        $processed = 0;
+        $processedTenders = 0;
+        $processedPlans = 0;
+        $processedContracts = 0;
         $delay = (int) Yii::$app->params['sleep_delay_interval'];
         $elastic_indexing = (bool) Yii::$app->params['elastic_indexing'];
-        $elastic = new ElasticComponent(
+        $elasticTenders = new ElasticComponent(
             Yii::$app->params['elastic_url'],
             Yii::$app->params['elastic_tenders_index'],
             Yii::$app->params['elastic_tenders_type']
         );
+        $elasticPlans = new ElasticComponent(
+            Yii::$app->params['elastic_url'],
+            Yii::$app->params['elastic_plans_index'],
+            Yii::$app->params['elastic_plans_type']
+        );
+
+        $elasticContracts = new ElasticComponent(
+            Yii::$app->params['elastic_url'],
+            Yii::$app->params['elastic_contracts_index'],
+            Yii::$app->params['elastic_contracts_type']
+        );
 
         if ($elastic_indexing) {
-            $result = $elastic->checkMapping();
+            $result = $elasticTenders->checkMapping();
             if ($result['code'] != 200) {
-                throw new HttpException(400, "Elastic mapping error. Http-code: " . $result['code']);
+                throw new HttpException(400, "Elastic mapping tenders error. Http-code: " . $result['code']);
             }
+
+            $result = $elasticPlans->checkMapping();
+            if ($result['code'] != 200) {
+                throw new HttpException(400, "Elastic mapping plans error. Http-code: " . $result['code']);
+            }
+
+            $result = $elasticContracts->checkMapping();
+            if ($result['code'] != 200) {
+                throw new HttpException(400, "Elastic mapping contracts error. Http-code: " . $result['code']);
+            }
+
         }
 
         $items = DB::fetchAll('SELECT * FROM ' . self::TABLE_TENDERS_UPDATES . ' ORDER BY updated_at LIMIT ?', [$count]);
@@ -89,22 +115,40 @@ class TendersUpdates
 
                     switch ($decodedItem['type']) {
                         case Tender::MARK_TENDER:
-                            self::handleDb($decodedItem, $cdu_id);
+                            self::handleDbTenders($decodedItem, $cdu_id);
 
                             if ($elastic_indexing) {
-                                $elastic->indexTender($decodedItem, self::CDU_ALIAS);
+                                $elasticTenders->indexTender($decodedItem, self::CDU_ALIAS);
                             }
-
+                            $processedTenders++;
                             break;
+
                         case Tender::MARK_PLAN:
+                            self::handleDbPlans($decodedItem, $cdu_id);
+
+                            if ($elastic_indexing) {
+                                $elasticPlans->indexPlan($decodedItem, self::CDU_ALIAS);
+                            }
+                            $processedPlans++;
+                            break;
+
                         case Tender::MARK_CONTRACT:
+
+                            self::handleDbContracts($decodedItem, $cdu_id);
+
+                            if ($elastic_indexing) {
+                                $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
+                            }
+                            $processedContracts++;
+                            break;
+
+
                         default:
                             break;
                     }
 
                     DB::execute('DELETE FROM ' . self::TABLE_TENDERS_UPDATES . ' WHERE "tender_id" = ?', [$item['tender_id']]);
 
-                    $processed++;
 
                     DB::commit();
                 } catch (\Exception $exception) {
@@ -113,7 +157,7 @@ class TendersUpdates
                 }
             }
 
-            Yii::info("Processed {$processed} tenders.", 'sync-info');
+            Yii::info("Processed {$processedTenders} tenders, {$processedPlans} plans, {$processedContracts} contracts", 'sync-info');
         }
     }
 
@@ -122,7 +166,7 @@ class TendersUpdates
      * @param $item
      * @param $cdu_id
      */
-    private static function handleDb($item, $cdu_id) {
+    private static function handleDbTenders($item, $cdu_id) {
         $count = DB::rowCount('SELECT * FROM ' . self::TABLE_TENDERS . ' WHERE tender_id = ?', [$item['tender_id']]);
 
         if ($count == 0) {
@@ -131,6 +175,40 @@ class TendersUpdates
 
         if ($count == 1) {
             DB::execute('UPDATE ' . self::TABLE_TENDERS . ' SET "response" = ?, "release_package" = ? WHERE "tender_id" = ?', [$item['response'], $item['release_package'], $item['tender_id']]);
+        }
+    }
+
+    /**
+     * Update plan data in db
+     * @param $item
+     * @param $cdu_id
+     */
+    private static function handleDbPlans($item, $cdu_id) {
+        $count = PlansDB::rowCount('SELECT * FROM ' . self::TABLE_PLANS . ' WHERE plan_id = ?', [$item['tender_id']]);
+
+        if ($count == 0) {
+            PlansDB::execute('INSERT INTO ' . self::TABLE_PLANS . ' ("plan_id", "response", "release_package", "cdu_id") VALUES (?, ?, ?, ?)', [$item['tender_id'], $item['response'], $item['release_package'], $cdu_id]);
+        }
+
+        if ($count == 1) {
+            PlansDB::execute('UPDATE ' . self::TABLE_PLANS . ' SET "response" = ?, "release_package" = ? WHERE "plan_id" = ?', [$item['response'], $item['release_package'], $item['tender_id']]);
+        }
+    }
+
+    /**
+     * Update plan data in db
+     * @param $item
+     * @param $cdu_id
+     */
+    private static function handleDbContracts($item, $cdu_id) {
+        $count = contractsDB::rowCount('SELECT * FROM ' . self::TABLE_CONTRACTS . ' WHERE contract_id = ?', [$item['tender_id']]);
+
+        if ($count == 0) {
+            contractsDB::execute('INSERT INTO ' . self::TABLE_CONTRACTS . ' ("contract_id", "response", "release_package", "cdu_id") VALUES (?, ?, ?, ?)', [$item['tender_id'], $item['response'], $item['release_package'], $cdu_id]);
+        }
+
+        if ($count == 1) {
+            contractsDB::execute('UPDATE ' . self::TABLE_CONTRACTS . ' SET "response" = ?, "release_package" = ? WHERE "contract_id" = ?', [$item['response'], $item['release_package'], $item['tender_id']]);
         }
     }
 }
