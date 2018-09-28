@@ -2,8 +2,9 @@
 namespace console\models\budgets;
 
 use Yii;
-use PDOException;
 use yii\web\HttpException;
+use console\models\elastic\ElasticComponent;
+use PDOException;
 
 /**
  * Class BudgetsUpdates
@@ -52,7 +53,11 @@ class BudgetsUpdates
         $processed = 0;
         $delay = (int) Yii::$app->params['sleep_delay_interval'];
         $elastic_indexing = (bool) Yii::$app->params['elastic_indexing'];
-        $elastic = new Elastic();
+        $elastic = new ElasticComponent(
+            Yii::$app->params['elastic_url'],
+            Yii::$app->params['elastic_budgets_index'],
+            Yii::$app->params['elastic_budgets_type']
+        );
 
         if ($elastic_indexing) {
             $result = $elastic->checkMapping();
@@ -74,10 +79,12 @@ class BudgetsUpdates
                 try {
                     DB::beginTransaction();
 
-                    self::handleDb($item);
+                    $decodedItem = Budget::decode($item);
+
+                    self::handleDb($decodedItem);
 
                     if ($elastic_indexing) {
-                        $elastic->indexBudget($item);
+                        $elastic->indexBudget($decodedItem);
                     }
 
                     DB::execute('DELETE FROM ' . self::TABLE_BUDGETS_UPDATES . ' WHERE "ocid" = ?', [$item['ocid']]);
@@ -87,6 +94,7 @@ class BudgetsUpdates
                     DB::commit();
                 } catch (\Exception $exception) {
                     DB::rollback();
+                    throw new $exception($exception->getMessage());
                 }
             }
 
@@ -107,5 +115,4 @@ class BudgetsUpdates
             DB::execute('UPDATE ' . self::TABLE_BUDGETS . ' SET "response" = ? WHERE "ocid" = ?', [$item['response'], $item['ocid']]);
         }
     }
-
 }
