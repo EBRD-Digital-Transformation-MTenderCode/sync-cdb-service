@@ -147,9 +147,24 @@ class ElasticComponent
             'dynamic' => 'strict',
             '_all' => ['enabled' => false],
             'properties' => [
-                'ocid' => ['type' => 'keyword'],
+                'id' => ['type' => 'keyword'],
                 'title' => ['type' => 'text'],
                 'description' => ['type' => 'text'],
+                'titlesOrDescriptions' => ['type' => 'text'],
+                'titlesOrDescriptionsStrict' => ['type' => 'text'],
+                'buyerRegion' => ['type' => 'keyword'],
+                'budgetStatuses' => ['type' => 'keyword'],
+                'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
+                'currency' => ['type' => 'keyword'],
+                'classifications' => ['type' => 'keyword'],
+                'periodPlanningFrom' => ['type' => 'date'],
+                'periodPlanningTo' => ['type' => 'date'],
+                'buyerName' => ['type' => 'text'],
+                'buyersNames' => ['type' => 'text'],
+                'buyerIdentifier' => ['type' => 'keyword'],
+                'buyerType' => ['type' => 'keyword'],
+                'buyerMainGeneralActivity' => ['type' => 'keyword'],
+                'buyerMainSectoralActivity' => ['type' => 'keyword'],
             ]
         ];
         $jsonMap = json_encode($mapArr);
@@ -477,19 +492,102 @@ class ElasticComponent
      * @param $budget
      */
     public function indexBudget($budget) {
-        $response = $budget['response'];
-        $jsonArr = json_decode($response, 1);
+        $jsonArr = json_decode($budget['response'], 1);
         $records = $jsonArr['records'];
+        $id = '';
+        $title = '';
+        $description = '';
+        $buyerRegion = '';
+        $buyerName = '';
+        $buyerIdentifier = '';
+        $buyerType = '';
+        $buyerMainGeneralActivity = '';
+        $buyerMainSectoralActivity = '';
+        $currency = '';
+        $amount = 0;
+        $periodPlanningFrom = null;
+        $periodPlanningTo = null;
+        $titlesOrDescriptions = [];
+        $budgetStatuses = [];
+        $buyersNames = [];
+        $classifications = [];
+
         foreach ($records as $record) {
+            //EI
             if ($record['ocid'] == $budget['ocid']) {
-                $ocid = $record['ocid'];
-                $title = ($record['compiledRelease']['tender']['title']) ?? "";
-                $description = ($record['compiledRelease']['tender']['description']) ?? "";
-                $docArr = ['ocid' => $ocid, 'title' => $title, 'description' => $description];
-                $this->indexDoc($docArr, $docArr['ocid']);
-                break;
+                $id = $record['ocid'];
+                $data = $record['compiledRelease'];
+
+                $classifications[] = $data['tender']['classification']['id'] ?? '';
+
+                if (!empty($data['tender']['title'])) {
+                    $title = $data['tender']['title'];
+                    $titlesOrDescriptions[$title] = $title;
+                }
+
+                if (!empty($data['tender']['description'])) {
+                    $title = $data['tender']['description'];
+                    $titlesOrDescriptions[$title] = $title;
+                }
+
+                if (isset($data['parties']) && is_array($data['parties'])) {
+                    $part = $data['parties'][0];
+                    $buyerRegion = $part['address']['addressDetails']['region']['description'] ?? '';
+
+                    if (!empty($part['name'])) {
+                        $buyerName = $part['name'];
+                        $buyersNames[$part['name']] = $part['name'];
+                    }
+
+                    if (!empty($part['identifier']['legalName'])) {
+                        $buyersNames[$part['identifier']['legalName']] = $part['identifier']['legalName'];
+                    }
+
+                    $buyerIdentifier = $part['identifier']['id'] ?? '';
+                    $buyerType = $part['details']['typeOfBuyer'] ?? '';
+                    $buyerMainGeneralActivity = $part['details']['mainGeneralActivity'] ?? '';
+                    $buyerMainSectoralActivity = $part['details']['mainSectoralActivity'] ?? '';
+                }
+            }
+
+            //STAGE
+            if ($record['ocid'] == $budget['stageId']) {
+                $data = $record['compiledRelease'];
+
+                $amount = $data['planning']['budget']['amount']['amount'] ?? 0;
+                $currency = $data['planning']['budget']['amount']['currency'] ?? '';
+                $periodPlanningFrom = $data['planning']['budget']['period']['startDate'] ?? null;
+                $periodPlanningTo = $data['planning']['budget']['period']['endDate'] ?? null;
+
+                if (isset($data['tag']) && is_array($data['tag'])) {
+                    foreach ($data['tag'] as $tag) {
+                        $budgetStatuses[$tag] = $tag;
+                    }
+                }
             }
         }
+
+        $docArr = [
+            'id'                         => $id,
+            'title'                      => $title,
+            'description'                => $description,
+            'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
+            'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
+            'buyerRegion'                => $buyerRegion,
+            'budgetStatuses'             => array_values($budgetStatuses),
+            'amount'                     => $amount,
+            'currency'                   => $currency,
+            'classifications'            => array_values($classifications),
+            'periodPlanningFrom'         => $periodPlanningFrom,
+            'periodPlanningTo'           => $periodPlanningTo,
+            'buyerName'                  => $buyerName,
+            'buyersNames'                => array_values($buyersNames),
+            'buyerIdentifier'            => $buyerIdentifier,
+            'buyerType'                  => $buyerType,
+            'buyerMainGeneralActivity'   => $buyerMainGeneralActivity,
+            'buyerMainSectoralActivity'  => $buyerMainSectoralActivity
+        ];
+        $this->indexDoc($docArr, $docArr['id']);
     }
 
     /**

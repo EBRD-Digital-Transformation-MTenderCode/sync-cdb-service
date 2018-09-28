@@ -1,9 +1,9 @@
 <?php
 namespace console\models\budgets;
 
-use console\models\Curl;
 use Yii;
 use yii\web\HttpException;
+use console\models\Curl;
 
 /**
  * Class Budget
@@ -11,7 +11,12 @@ use yii\web\HttpException;
  */
 class Budget
 {
-    CONST TABLE_NAME = "budgets_updates";
+    const TABLE_NAME = 'budgets_updates';
+    const DIVIDER = '-';
+    const MARK_BUDGET = 'FS';
+    const MARKS = [
+        self::MARK_BUDGET,
+    ];
 
     /**
      * Search of the budget in our database
@@ -77,6 +82,32 @@ class Budget
 
             unset($item);
         }
+    }
+
+    /**
+     * Returns tender with json decoded props and type
+     * @param array $item
+     * @return array $decodedItem
+     */
+    public static function decode($item)
+    {
+        $responseArray = json_decode($item['response'], 1);
+        $item['records'] = $responseArray['records'];
+        $item['type'] = '';
+        $item['stageId'] = '';
+
+        foreach ($item['records'] as $record) {
+            $type = explode(self::DIVIDER, substr($record['ocid'], strlen($item['ocid'])))[1] ?? null;
+
+            if (in_array($type, self::MARKS)) {
+                $item['type'] = $type;
+                $item['stageId'] = $record['ocid'];
+                break;
+            }
+
+        }
+
+        return $item;
     }
 
     /**
