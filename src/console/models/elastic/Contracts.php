@@ -1,17 +1,17 @@
 <?php
 namespace console\models\elastic;
 
+use console\models\contracts\Contract;
 use Yii;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
-use console\models\tenders\Tender;
 use PDOException;
 
 /**
- * Class Tenders
+ * Class Contracts
  * @package console\models\elastic
  */
-class Tenders
+class Contracts
 {
     const TYPE_PROZORRO = 'mtender1';
 
@@ -20,40 +20,45 @@ class Tenders
      */
     public static function getDb()
     {
-        return Yii::$app->db_tenders;
+        return Yii::$app->db_contracts;
     }
 
     /**
-     * indexing of tenders to elastic
+     * indexing of contracts to elastic
+     *
+     * @throws \yii\web\ForbiddenHttpException
      * @throws \yii\web\HttpException
      */
-    public function reindexItemsToElastic()
+    public function indexItemsToElastic()
     {
-        Yii::info("Indexing tenders", 'console-msg');
+        Yii::info("Indexing contracts", 'console-msg');
         $limit = 25;
         $offset = 0;
         $url = Yii::$app->params['elastic_url'];
-        $index = Yii::$app->params['elastic_tenders_index'];
-        $type = Yii::$app->params['elastic_tenders_type'];
+        $index = Yii::$app->params['elastic_contracts_index'];
+        $type = Yii::$app->params['elastic_contracts_type'];
         $elastic = new ElasticComponent($url, $index, $type);
         while (true) {
             try {
                 // block the update of selected records in the database
-                $transaction = Yii::$app->db_tenders->beginTransaction();
-                $tenders = Yii::$app->db_tenders->createCommand("SELECT * FROM tenders FOR UPDATE LIMIT {$limit} OFFSET {$offset}")->queryAll();
-                $cdu = ArrayHelper::map(Yii::$app->db_tenders->createCommand("SELECT * FROM cdu")->queryAll(), 'id', 'alias');
-                $countTenders = count($tenders);
-                if (!$countTenders) {
+                $db = self::getDb();
+                $transaction = $db->beginTransaction();
+                $items = $db->createCommand("SELECT * FROM contracts FOR UPDATE LIMIT {$limit} OFFSET {$offset}")->queryAll();
+                $cdu = ArrayHelper::map($db->createCommand("SELECT * FROM cdu")->queryAll(), 'id', 'alias');
+
+                $countItems = count($items);
+                if (!$countItems) {
                     break;
                 }
                 $offset += $limit;
-                foreach ($tenders as $tender) {
-                    $cduV = $cdu[$tender['cdu_id']] ?? '';
+                foreach ($items as $item) {
+                    $cduV = $cdu[$item['cdu_id']] ?? '';
                     if ($cduV != self::TYPE_PROZORRO) {
-                        $decodedItem = Tender::decode($tender);
-                        $elastic->indexTender($decodedItem, $cduV);
+                        $decodedItem = Contract::decode($item);
+                        $elastic->indexContract($decodedItem, $cduV);
                     } else {
-                        $elastic->indexTenderPrz($tender, $cduV);
+                        // @todo:
+                        //$elastic->indexContract($item, $cduV);
                     }
                 }
                 $transaction->commit();
@@ -64,7 +69,7 @@ class Tenders
                 Yii::error("DB exception. " . $exception->getMessage(), 'console-msg');
                 exit(0);
             }
-            Yii::info("Updated {$countTenders} tenders", 'console-msg');
+            Yii::info("Updated {$countItems} plans", 'console-msg');
             // delay 0.3 sec
             usleep(300000);
         }

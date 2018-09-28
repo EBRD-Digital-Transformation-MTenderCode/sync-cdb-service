@@ -49,6 +49,8 @@ fi
 if [[ $SERVICENAME == "tenders-events-creator" ]]
 then
 ./yii migrate --migrationPath=@app/migrations/tenders --db=db_tenders --interactive=0
+./yii migrate --migrationPath=@app/migrations/plans --db=db_plans --interactive=0
+./yii migrate --migrationPath=@app/migrations/contracts --db=db_contracts --interactive=0
 ./yii tenders/updates
 fi
 
