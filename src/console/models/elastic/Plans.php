@@ -5,6 +5,7 @@ use Yii;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 use PDOException;
+use console\models\plans\Plan;
 
 /**
  * Class Plans
@@ -53,7 +54,8 @@ class Plans
                 foreach ($items as $item) {
                     $cduV = $cdu[$item['cdu_id']] ?? '';
                     if ($cduV != self::TYPE_PROZORRO) {
-
+                        $decodedItem = Plan::decode($item);
+                        $elastic->indexPlan($decodedItem, $cduV);
                     } else {
                         $elastic->indexPlanPrz($item, $cduV);
                     }

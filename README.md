@@ -7,7 +7,10 @@
 ./yii migrate --migrationPath=@app/migrations/tenders --db=db_tenders
 ./yii migrate --migrationPath=@app/migrations/tenders_prz --db=db_tenders
 
+./yii migrate --migrationPath=@app/migrations/plans --db=db_plans
 ./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans
+
+./yii migrate --migrationPath=@app/migrations/contracts --db=db_contracts
 
 # actions
 ./yii budgets/get-changed-list
@@ -32,8 +35,10 @@
 ./yii reindex-elastic/budgets
 ./yii reindex-elastic/tenders
 ./yii reindex-elastic/plans
+./yii mapping-elastic/contracts
 
 ./yii mapping-elastic/all
 ./yii mapping-elastic/budgets
 ./yii mapping-elastic/tenders
 ./yii mapping-elastic/plans
+./yii mapping-elastic/contracts

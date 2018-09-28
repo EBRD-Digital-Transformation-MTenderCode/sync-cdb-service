@@ -2,6 +2,7 @@
 namespace console\controllers;
 
 use console\models\elastic\Budgets;
+use console\models\elastic\Contracts;
 use console\models\elastic\ElasticComponent;
 use console\models\elastic\Plans;
 use console\models\elastic\Tenders;
@@ -25,6 +26,8 @@ class ReindexElasticController extends Controller
         $this->reindexTenders();
 
         $this->indexPlans();
+
+        $this->indexContracts();
 
         Yii::info("Elastic indexing is complete", 'console-msg');
     }
@@ -72,6 +75,21 @@ class ReindexElasticController extends Controller
         }
 
         Yii::info("Elastic indexing Plans is complete", 'console-msg');
+    }
+
+    /**
+     *  reindex Contracts
+     */
+    public function actionContracts()
+    {
+        try {
+            $this->indexContracts();
+        } catch (HttpException $e) {
+            Yii::error($e->getMessage(), 'console-msg');
+            exit(0);
+        }
+
+        Yii::info("Elastic indexing Contracts is complete", 'console-msg');
     }
 
     /**
@@ -176,6 +194,44 @@ class ReindexElasticController extends Controller
             }
             $plans = new Plans();
             $plans->indexItemsToElastic();
+
+        } catch (HttpException $e) {
+            Yii::error($e->getMessage(), 'console-msg');
+            exit(0);
+        }
+    }
+
+    /**
+     * Contracts
+     */
+    private function indexContracts()
+    {
+        $elastic_url = Yii::$app->params['elastic_url'];
+        $elastic_index = Yii::$app->params['elastic_contracts_index'];
+        $elastic_type = Yii::$app->params['elastic_contracts_type'];
+
+        try {
+            $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
+            $result = $elastic->dropIndex();
+
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 404) {
+                Yii::error("Elastic index " . $elastic_index . " error. Code: " . $result['code'], 'console-msg');
+                exit(0);
+            }
+
+            $result = $elastic->setIndexSettings();
+            if ((int)$result['code'] != 200) {
+                Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+                exit(0);
+            }
+
+            $result = $elastic->contractsMapping();
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
+                Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
+                exit(0);
+            }
+            $contracts = new Contracts();
+            $contracts->indexItemsToElastic();
 
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');

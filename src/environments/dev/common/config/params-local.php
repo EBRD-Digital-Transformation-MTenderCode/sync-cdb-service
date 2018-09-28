@@ -5,6 +5,7 @@ return [
     'tenders_url' => '{{environments_TENDERS_URL}}',
     'tenders_prz_url' => '{{environments_TENDERS_PRZ_URL}}',
     'plans_prz_url' => '{{environments_PLANS_PRZ_URL}}',
+    'plans_contracts_url' => '{{environments_CONTRACTS_PRZ_URL}}',
 
     'elastic_indexing' => '{{environments_ELASTIC_INDEXING}}',
     'elastic_budgets_index' => '{{environments_ELASTIC_BUDGETS_INDEX}}',
@@ -13,6 +14,8 @@ return [
     'elastic_tenders_type' => '{{environments_ELASTIC_TENDERS_TYPE}}',
     'elastic_plans_index' => '{{environments_ELASTIC_PLANS_INDEX}}',
     'elastic_plans_type' => '{{environments_ELASTIC_PLANS_TYPE}}',
+    'elastic_contracts_index' => '{{environments_ELASTIC_CONTRACTS_INDEX}}',
+    'elastic_contracts_type' => '{{environments_ELASTIC_CONTRACTS_TYPE}}',
     'elastic_url' => '{{environments_ELASTIC_URL}}',
 
     'sleep_delay_interval' => '{{environments_SLEEP_DELAY_INTERVAL}}',

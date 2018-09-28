@@ -21,6 +21,7 @@ class MappingElasticController extends Controller
         $this->actionBudgets();
         $this->actionTenders();
         $this->actionPlans();
+        $this->actionContracts();
 
         Yii::info("Elastic mapping is complete", 'console-msg');
     }
@@ -102,6 +103,35 @@ class MappingElasticController extends Controller
         }
 
         Yii::info("Plans mapping is complete", 'console-msg');
+    }
+
+    /**
+     * @throws HttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionContracts()
+    {
+        $elastic_url = Yii::$app->params['elastic_url'];
+        $elastic_index = Yii::$app->params['elastic_contracts_index'];
+        $elastic_type = Yii::$app->params['elastic_contracts_type'];
+        $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
+        $elastic->dropIndex();
+
+        $result = $elastic->setIndexSettings();
+
+        if ((int)$result['code'] != 200) {
+            Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+            exit(0);
+        }
+
+        $result = $elastic->contractsMapping();
+
+        if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
+            Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
+            exit(0);
+        }
+
+        Yii::info("Contracts mapping is complete", 'console-msg');
     }
 
 }

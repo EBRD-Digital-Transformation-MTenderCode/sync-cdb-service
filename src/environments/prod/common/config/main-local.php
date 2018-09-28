@@ -24,6 +24,13 @@ return [
             'password' => '{{environments_DB_PASSWORD}}',
             'charset' => 'utf8',
         ],
+        'db_contracts' => [
+            'class' => Connection::class,
+            'dsn' => 'pgsql:host={{environments_DB_HOST}};port=5432;dbname={{environments_DB_CONTRACTS_NAME}}',
+            'username' => '{{environments_DB_USERNAME}}',
+            'password' => '{{environments_DB_PASSWORD}}',
+            'charset' => 'utf8',
+        ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
             'viewPath' => '@common/mail',
