@@ -57,8 +57,7 @@ class Contracts
                         $decodedItem = Contract::decode($item);
                         $elastic->indexContract($decodedItem, $cduV);
                     } else {
-                        // @todo:
-                        //$elastic->indexContract($item, $cduV);
+                        $elastic->indexContractPrz($item, $cduV);
                     }
                 }
                 $transaction->commit();
@@ -69,7 +68,7 @@ class Contracts
                 Yii::error("DB exception. " . $exception->getMessage(), 'console-msg');
                 exit(0);
             }
-            Yii::info("Updated {$countItems} plans", 'console-msg');
+            Yii::info("Updated {$countItems} contracts", 'console-msg');
             // delay 0.3 sec
             usleep(300000);
         }

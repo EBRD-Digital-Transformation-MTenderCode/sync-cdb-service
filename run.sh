@@ -92,6 +92,26 @@ then
 ./yii plans-prz/updates
 fi
 
+####### contracts
+
+if [[ $SERVICENAME == "contracts-prz-changed-list-getter" ]]
+then
+./yii migrate --migrationPath=@app/migrations/contracts_prz --db=db_contracts --interactive=0
+./yii contracts-prz/get-changed-list
+fi
+
+if [[ $SERVICENAME == "contracts-prz-updates-getter" ]]
+then
+./yii migrate --migrationPath=@app/migrations/contracts_prz --db=db_contracts --interactive=0
+./yii contracts-prz/get-updates
+fi
+
+if [[ $SERVICENAME == "contracts-prz-events-creator" ]]
+then
+./yii migrate --migrationPath=@app/migrations/contracts_prz --db=db_contracts --interactive=0
+./yii contracts-prz/updates
+fi
+
 ####### elastic-search-settings
 if [[ $SERVICENAME == "elastic-search-settings" ]]
 then

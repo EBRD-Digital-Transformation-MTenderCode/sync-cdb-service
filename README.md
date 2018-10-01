@@ -11,6 +11,7 @@
 ./yii migrate --migrationPath=@app/migrations/plans_prz --db=db_plans
 
 ./yii migrate --migrationPath=@app/migrations/contracts --db=db_contracts
+./yii migrate --migrationPath=@app/migrations/contracts_prz --db=db_contracts
 
 # actions
 ./yii budgets/get-changed-list
@@ -29,13 +30,17 @@
 ./yii plans-prz/get-updates
 ./yii plans-prz/updates
 
+./yii contracts-prz/get-changed-list
+./yii contracts-prz/get-updates
+./yii contracts-prz/updates
+
 
 # команды для Elastic
 ./yii reindex-elastic/all
 ./yii reindex-elastic/budgets
 ./yii reindex-elastic/tenders
 ./yii reindex-elastic/plans
-./yii mapping-elastic/contracts
+./yii reindex-elastic/contracts
 
 ./yii mapping-elastic/all
 ./yii mapping-elastic/budgets
