@@ -34,6 +34,8 @@
 ./yii contracts-prz/get-updates
 ./yii contracts-prz/updates
 
+./yii cpv/import
+
 
 # команды для Elastic
 ./yii reindex-elastic/all
@@ -47,3 +49,4 @@
 ./yii mapping-elastic/tenders
 ./yii mapping-elastic/plans
 ./yii mapping-elastic/contracts
+./yii mapping-elastic/cpv

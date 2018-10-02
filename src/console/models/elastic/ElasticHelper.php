@@ -82,6 +82,30 @@ class ElasticHelper
     }
 
     /**
+     * @return array
+     */
+    public static function getCpvMap() {
+        $mapArr = [
+            'dynamic' => 'strict',
+            '_all' => ['enabled' => false],
+            'properties' => [
+                'id' => ['type' => 'keyword'],
+                'parent_id' => ['type' => 'keyword'],
+                'children' => ['type' => 'integer'],
+                'name' => [
+                    'properties' => [
+                        'en' => ['type' => 'text'],
+                        'uk' => ['type' => 'text'],
+                        'ru' => ['type' => 'text'],
+                    ]
+                ],
+            ],
+        ];
+
+        return $mapArr;
+    }
+
+    /**
      * OCDS tender
      *
      * @param $tender
@@ -547,6 +571,23 @@ class ElasticHelper
             'periodDeliveryTo'           => array_values($periodDeliveryTo),
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
+        ];
+
+        return $docArr;
+    }
+
+    public static function prepareCpvToElastic($data) {
+
+        $id = $data['id'];
+        $children = $data['children'];
+        $parent_id = $data['parent_id'];
+        $name = $data['name'];
+
+        $docArr = [
+            'id' => $id,
+            'children' => $children,
+            'parent_id' => $parent_id,
+            'name' => $name,
         ];
 
         return $docArr;
