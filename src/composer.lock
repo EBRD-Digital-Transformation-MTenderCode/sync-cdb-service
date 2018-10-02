@@ -3206,11 +3206,11 @@
         },
         {
             "name": "ustudio/service_mandatory",
-            "version": "v4.3.2.8",
+            "version": "v4.3.2.9",
             "source": {
                 "type": "git",
                 "url": "https://pbox-reader@bitbucket.org/ustudio-llc/service_mandatory_parts-composer_package.git",
-                "reference": "6a7242f3f49e5c6ca920d58e5eb49ca8775b2448"
+                "reference": "9211481e869c997afe9c5ad7aaea2fe232e61c1e"
             },
             "require": {
                 "swagger-api/swagger-ui": "~3.1",
@@ -3226,7 +3226,7 @@
                 "proprietary"
             ],
             "description": "Represents a contoller to return list of available API endpoints",
-            "time": "2018-10-01T13:38:26+00:00"
+            "time": "2018-10-02T07:08:23+00:00"
         },
         {
             "name": "ustudio/swagger_parser",
