@@ -300,6 +300,16 @@ class ElasticComponent
 
     }
 
+    /**
+     * Index prozorro contract
+     * @param $contract
+     * @param $cdb
+     */
+    public function indexContractPrz($contract, $cdb) {
+        $docArr = ElasticHelper::prepareContractPrzToElastic($contract, $cdb);
+        $this->indexDoc($docArr, $docArr['id']);
+    }
+
 
     /**
      * Drop index
