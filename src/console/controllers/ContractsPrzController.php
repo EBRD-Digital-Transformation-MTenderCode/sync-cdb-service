@@ -24,8 +24,8 @@ class ContractsPrzController extends Controller
             exit(0);
         }
 
-        if (!isset(Yii::$app->params['plans_prz_url']) || empty(Yii::$app->params['plans_prz_url'])) {
-            Yii::error("plans_prz_url parameter not set.", 'sync-info');
+        if (!isset(Yii::$app->params['contracts_prz_url']) || empty(Yii::$app->params['contracts_prz_url'])) {
+            Yii::error("contracts_prz_url parameter not set.", 'sync-info');
             exit(0);
         }
 
