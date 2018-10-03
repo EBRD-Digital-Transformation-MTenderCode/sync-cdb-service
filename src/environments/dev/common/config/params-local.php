@@ -16,6 +16,8 @@ return [
     'elastic_plans_type' => '{{environments_ELASTIC_PLANS_TYPE}}',
     'elastic_contracts_index' => '{{environments_ELASTIC_CONTRACTS_INDEX}}',
     'elastic_contracts_type' => '{{environments_ELASTIC_CONTRACTS_TYPE}}',
+    'elastic_cpv_index' => '{{environments_ELASTIC_CPV_INDEX}}',
+    'elastic_cpv_type' => '{{environments_ELASTIC_CPV_TYPE}}',
     'elastic_url' => '{{environments_ELASTIC_URL}}',
 
     'sleep_delay_interval' => '{{environments_SLEEP_DELAY_INTERVAL}}',
