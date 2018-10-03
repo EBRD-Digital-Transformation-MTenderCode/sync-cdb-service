@@ -58,6 +58,7 @@ class ElasticHelper
                 'currency' => ['type' => 'keyword'],
                 'classifications' => ['type' => 'keyword'],
                 'publishedDate' => ['type' => 'date'],
+                'modifiedDate' => ['type' => 'date'],
                 'periodDeliveryFrom' => ['type' => 'date'],
                 'periodDeliveryTo' => ['type' => 'date'],
                 'periodEnquiryFrom' => ['type' => 'date'],
@@ -138,6 +139,7 @@ class ElasticHelper
             $amount = $ms['compiledRelease']['tender']['value']['amount'] ?? 0;
             $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
             $publishedDate = $tender['releasePackage']['publishedDate'] ?? null;
+            $modifiedDate = $ms['compiledRelease']['date'] ?? null;
             $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
             $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
             $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
@@ -232,6 +234,7 @@ class ElasticHelper
                 'currency'                  => $currency,
                 'classifications'           => array_values($classifications),
                 'publishedDate'             => $publishedDate,
+                'modifiedDate'              => $modifiedDate,
                 'periodDeliveryFrom'        => array_values($periodDeliveryFrom),
                 'periodDeliveryTo'          => array_values($periodDeliveryTo),
                 'periodEnquiryFrom'         => $periodEnquiryFrom,
@@ -297,6 +300,7 @@ class ElasticHelper
         $currency = $data['data']['value']['currency'] ?? '';
 
         $publishedDate = $data['data']['enquiryPeriod']['startDate'] ?? null;
+        $modifiedDate = $data['data']['dateModified'] ?? null;
         $periodEnquiryFrom = $data['data']['enquiryPeriod']['startDate'] ?? null;
         $periodEnquiryTo = $data['data']['enquiryPeriod']['endDate'] ?? null;
         $periodOfferFrom = $data['data']['tenderPeriod']['startDate'] ?? null;
@@ -326,14 +330,6 @@ class ElasticHelper
                 if (!empty($lot['description'])) {
                     $titlesOrDescriptions[$lot['description']] = $lot['description'];
                 }
-
-                if (!empty($lot['deliveryDate']['startDate'])) {
-                    $periodDeliveryFrom[$lot['deliveryDate']['startDate']] = $lot['deliveryDate']['startDate'];
-                }
-
-                if (!empty($lot['deliveryDate']['endDate'])) {
-                    $periodDeliveryTo[$lot['deliveryDate']['endDate']] = $lot['deliveryDate']['endDate'];
-                }
             }
         }
 
@@ -345,6 +341,14 @@ class ElasticHelper
 
                 if (!empty($item['classification']['id'])) {
                     $classifications[$item['classification']['id']] = $item['classification']['id'];
+                }
+
+                if (!empty($item['deliveryDate']['startDate'])) {
+                    $periodDeliveryFrom[$item['deliveryDate']['startDate']] = $item['deliveryDate']['startDate'];
+                }
+
+                if (!empty($item['deliveryDate']['endDate'])) {
+                    $periodDeliveryTo[$item['deliveryDate']['endDate']] = $item['deliveryDate']['endDate'];
                 }
             }
         }
@@ -364,6 +368,7 @@ class ElasticHelper
             'currency'                   => $currency,
             'classifications'            => array_values($classifications),
             'publishedDate'              => $publishedDate,
+            'modifiedDate'               => $modifiedDate,
             'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
             'periodDeliveryTo'           => array_values($periodDeliveryTo),
             'periodEnquiryFrom'          => $periodEnquiryFrom,

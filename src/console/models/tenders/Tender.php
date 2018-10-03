@@ -106,14 +106,27 @@ class Tender
         $item['stageId'] = '';
 
         foreach ($responseArray['actualReleases'] as $actualRelease) {
-            $type = explode(self::DIVIDER, substr($actualRelease['ocid'], strlen($item['tender_id'])))[1];
+            $type = explode(self::DIVIDER, substr($actualRelease['ocid'], strlen($item['tender_id'])))[1] ?? null;
             $item['item_id'] = $item['tender_id'];
             if (in_array($type, self::MARKS)) {
                 $item['type'] = $type;
                 $item['stageId'] = $actualRelease['ocid'];
                 break;
             }
+        }
 
+        $ocids = [];
+        foreach ($responseArray['records'] as $record) {
+            $type = explode(self::DIVIDER, substr($record['ocid'], strlen($item['tender_id'])))[1] ?? null;
+
+            if (in_array($type, self::MARKS)) {
+                $ocids[$type] = $record['ocid'];
+            }
+        }
+
+        //set EV record as STAGE for CONTRACTS
+        if (isset($ocids[self::MARK_CONTRACT]) && isset($ocids[self::MARK_TENDER])) {
+            $item['stageId'] = $ocids[self::MARK_TENDER];
         }
 
         return $item;

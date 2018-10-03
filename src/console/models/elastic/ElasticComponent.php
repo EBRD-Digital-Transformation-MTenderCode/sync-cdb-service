@@ -101,6 +101,7 @@ class ElasticComponent
                 'classifications' => ['type' => 'keyword'],
                 'periodPlanningFrom' => ['type' => 'date'],
                 'periodPlanningTo' => ['type' => 'date'],
+                'modifiedDate' => ['type' => 'date'],
                 'buyerName' => ['type' => 'text'],
                 'buyersNames' => ['type' => 'text'],
                 'buyerIdentifier' => ['type' => 'keyword'],
@@ -181,6 +182,7 @@ class ElasticComponent
         $buyerMainSectoralActivity = '';
         $currency = '';
         $amount = 0;
+        $modifiedDate = null;
         $periodPlanningFrom = null;
         $periodPlanningTo = null;
         $titlesOrDescriptions = [];
@@ -194,6 +196,7 @@ class ElasticComponent
                 $id = $record['ocid'];
                 $data = $record['compiledRelease'];
 
+                $modifiedDate = $data['date'] ?? null;
                 $classifications[] = $data['tender']['classification']['id'] ?? '';
 
                 if (!empty($data['tender']['title'])) {
@@ -256,6 +259,7 @@ class ElasticComponent
             'classifications'            => array_values($classifications),
             'periodPlanningFrom'         => $periodPlanningFrom,
             'periodPlanningTo'           => $periodPlanningTo,
+            'modifiedDate'               => $modifiedDate,
             'buyerName'                  => $buyerName,
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
