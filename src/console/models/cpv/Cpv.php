@@ -62,18 +62,16 @@ Class Cpv
      */
     public static function handle()
     {
-        $elastic_indexing = (bool)Yii::$app->params['elastic_indexing'];
         $elastic = new ElasticComponent(
             Yii::$app->params['elastic_url'],
             Yii::$app->params['elastic_cpv_index'],
             Yii::$app->params['elastic_cpv_type']
         );
 
-        if ($elastic_indexing) {
-            $result = $elastic->checkMapping();
-            if ($result['code'] != 200) {
-                throw new HttpException(400, "Elastic mapping error. Http-code: " . $result['code']);
-            }
+
+        $result = $elastic->checkMapping();
+        if ($result['code'] != 200) {
+            throw new HttpException(400, "Elastic mapping error. Http-code: " . $result['code']);
         }
 
         $cpvArray = self::getCpv();
@@ -86,10 +84,8 @@ Class Cpv
                 'ru' => $item['name_ru']
             ];
 
-            if ($elastic_indexing) {
-                $elastic->indexCpv($data);
-                Yii::info("Cpv import to elastic add id #" . $data['id'], 'console-msg');
-            }
+            $elastic->indexCpv($data);
+            Yii::info("Cpv import to elastic add id #" . $data['id'], 'console-msg');
         }
     }
 
