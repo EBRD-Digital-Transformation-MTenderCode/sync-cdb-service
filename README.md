@@ -49,4 +49,3 @@
 ./yii mapping-elastic/tenders
 ./yii mapping-elastic/plans
 ./yii mapping-elastic/contracts
-./yii mapping-elastic/cpv
