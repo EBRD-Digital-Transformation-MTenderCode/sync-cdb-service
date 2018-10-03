@@ -144,6 +144,20 @@ class ElasticComponent
     }
 
     /**
+     * Cpv mapping
+     * @return array
+     * @throws HttpException
+     */
+    public function cpvMapping()
+    {
+        Yii::info("Mapping cpv", 'console-msg');
+        $mapArr = ElasticHelper::getCpvMap();
+        $jsonMap = json_encode($mapArr);
+
+        return $this->createMapping($jsonMap);
+    }
+
+    /**
      * Index tender
      * @param $tender
      */
@@ -311,6 +325,15 @@ class ElasticComponent
      */
     public function indexContractPrz($contract, $cdb) {
         $docArr = ElasticHelper::prepareContractPrzToElastic($contract, $cdb);
+        $this->indexDoc($docArr, $docArr['id']);
+    }
+
+    /**
+     * Index cpv
+     * @param $cpv
+     */
+    public function indexCpv($cpv) {
+        $docArr = ElasticHelper::prepareCpvToElastic($cpv);
         $this->indexDoc($docArr, $docArr['id']);
     }
 

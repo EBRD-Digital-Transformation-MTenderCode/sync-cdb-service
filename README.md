@@ -34,6 +34,8 @@
 ./yii contracts-prz/get-updates
 ./yii contracts-prz/updates
 
+./yii cpv/import
+
 
 # команды для Elastic
 ./yii reindex-elastic/all
