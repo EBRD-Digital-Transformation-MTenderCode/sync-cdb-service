@@ -50,8 +50,6 @@ Class Cpv
 
         foreach ($cpvArray as $key => $item) {
             $data['id'] = $item['id'];
-            $data['children'] = $item['childs'];
-            $data['parent_id'] = (!empty($item['parent_id'])) ? $item['parent_id'] : null;
             $data['name'] = [
                 'en' => $item['name_en'],
                 'uk' => $item['name_uk'],
@@ -84,7 +82,6 @@ Class Cpv
             }
         }
 
-        $levelsArr = []; // array is used to store parent id
         $result = [];
 
 
@@ -99,49 +96,20 @@ Class Cpv
             preg_match('/^([0-9]{2})([0-9])([0-9])([0-9])([0-9]{3})\-[0-9]$/', $key, $digits);
 
             $cpvId = $digits[0];
-            $level = 4;
-
-            // cycle by cpv code categories
-            // defining the nesting level of the node
-            for ($j = 2; $j < count($digits); $j++) {
-                if ($digits[$j] == 0) {
-                    $level = $j - 2;
-                    break;
-                }
-            }
-
-            if ($level == 0 || !isset($levelsArr[$level])) {
-                $parentId = 0;
-            } else {
-                $parentId = $levelsArr[$level];
-            }
-
-            // Save the current ID for the following nodes
-            $levelsArr[$level + 1] = $cpvId;
 
             $result[$cpvId] = [
                 'id' => $cpvId,
-                'parent_id' => $parentId,
                 'name_en' => trim($inputData['en'][$key]),
                 'name_uk' => trim($inputData['uk'][$key]) ?? null,
                 'name_ru' => trim($inputData['ru'][$key]) ?? null,
-                'childs' => 0
             ];
-        }
-
-        // Defining the presence of child elements for nodes
-        $parentIds = array_column($result, 'parent_id');
-        foreach ($parentIds as $id) {
-            if ($id) $result[$id]['childs'] = 1;
         }
 
         $result["99999999-9"] = [
             'id' => "99999999-9",
-            'parent_id' => 0,
             'name_en' => "Not categorized",
             'name_uk' => "Не визначено",
             'name_ru' => "Не определен",
-            'childs' => 0
         ];
 
         return $result;

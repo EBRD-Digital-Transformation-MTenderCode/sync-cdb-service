@@ -89,9 +89,7 @@ class ElasticHelper
             'dynamic' => 'strict',
             '_all' => ['enabled' => false],
             'properties' => [
-                'id' => ['type' => 'keyword'],
-                'parent_id' => ['type' => 'keyword'],
-                'children' => ['type' => 'integer'],
+                'id' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
                 'name' => [
                     'properties' => [
                         'en' => ['type' => 'text'],
@@ -579,14 +577,10 @@ class ElasticHelper
     public static function prepareCpvToElastic($data) {
 
         $id = $data['id'];
-        $children = $data['children'];
-        $parent_id = $data['parent_id'];
         $name = $data['name'];
 
         $docArr = [
             'id' => $id,
-            'children' => $children,
-            'parent_id' => $parent_id,
             'name' => $name,
         ];
 
