@@ -93,7 +93,7 @@ class ElasticHelper
                 'name' => [
                     'properties' => [
                         'en' => ['type' => 'text'],
-                        'uk' => ['type' => 'text'],
+                        'ro' => ['type' => 'text'],
                         'ru' => ['type' => 'text'],
                     ]
                 ],
