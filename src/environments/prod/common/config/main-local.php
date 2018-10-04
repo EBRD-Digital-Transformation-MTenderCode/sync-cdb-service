@@ -5,28 +5,28 @@ return [
     'components' => [
         'db_tenders' => [
             'class' => Connection::class,
-            'dsn' => 'pgsql:host={{environments_DB_HOST}};port=5432;dbname={{environments_DB_TENDERS_NAME}}',
+            'dsn' => 'pgsql:host={{environments_DB_HOST}};port={{environments_DB_PORT}};dbname={{environments_DB_TENDERS_NAME}}',
             'username' => '{{environments_DB_USERNAME}}',
             'password' => '{{environments_DB_PASSWORD}}',
             'charset' => 'utf8',
         ],
         'db_budgets' => [
             'class' => Connection::class,
-            'dsn' => 'pgsql:host={{environments_DB_HOST}};port=5432;dbname={{environments_DB_BUDGETS_NAME}}',
+            'dsn' => 'pgsql:host={{environments_DB_HOST}};port={{environments_DB_PORT}};dbname={{environments_DB_BUDGETS_NAME}}',
             'username' => '{{environments_DB_USERNAME}}',
             'password' => '{{environments_DB_PASSWORD}}',
             'charset' => 'utf8',
         ],
         'db_plans' => [
             'class' => Connection::class,
-            'dsn' => 'pgsql:host={{environments_DB_HOST}};port=5432;dbname={{environments_DB_PLANS_NAME}}',
+            'dsn' => 'pgsql:host={{environments_DB_HOST}};port={{environments_DB_PORT}};dbname={{environments_DB_PLANS_NAME}}',
             'username' => '{{environments_DB_USERNAME}}',
             'password' => '{{environments_DB_PASSWORD}}',
             'charset' => 'utf8',
         ],
         'db_contracts' => [
             'class' => Connection::class,
-            'dsn' => 'pgsql:host={{environments_DB_HOST}};port=5432;dbname={{environments_DB_CONTRACTS_NAME}}',
+            'dsn' => 'pgsql:host={{environments_DB_HOST}};port={{environments_DB_PORT}};dbname={{environments_DB_CONTRACTS_NAME}}',
             'username' => '{{environments_DB_USERNAME}}',
             'password' => '{{environments_DB_PASSWORD}}',
             'charset' => 'utf8',
