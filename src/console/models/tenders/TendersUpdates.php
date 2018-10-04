@@ -4,9 +4,9 @@ namespace console\models\tenders;
 use Yii;
 use yii\web\HttpException;
 use console\models\elastic\ElasticComponent;
-use PDOException;
 use console\models\plans\DB as PlansDB;
-use console\models\contracts\DB as contractsDB;
+use console\models\contracts\DB as ContractsDB;
+use PDOException;
 
 /**
  * Class TendersUpdates
@@ -114,17 +114,8 @@ class TendersUpdates
                     $decodedItem = Tender::decode($item);
 
                     switch ($decodedItem['type']) {
-                        case Tender::MARK_TENDER:
-                            self::handleDbTenders($decodedItem, $cdu_id);
-
-                            if ($elastic_indexing) {
-                                $elasticTenders->indexTender($decodedItem, self::CDU_ALIAS);
-                            }
-                            $processedTenders++;
-                            break;
-
                         case Tender::MARK_PLAN:
-                            self::handleDbPlans($decodedItem, $cdu_id);
+                            self::handlePlan($decodedItem, $cdu_id);
 
                             if ($elastic_indexing) {
                                 $elasticPlans->indexPlan($decodedItem, self::CDU_ALIAS);
@@ -132,11 +123,25 @@ class TendersUpdates
                             $processedPlans++;
                             break;
 
-                        case Tender::MARK_CONTRACT:
-
-                            self::handleDbContracts($decodedItem, $cdu_id);
+                        case Tender::MARK_TENDER:
+                            self::dropPlan($decodedItem);
+                            self::handleTender($decodedItem, $cdu_id);
 
                             if ($elastic_indexing) {
+                                $elasticPlans->deleteItem($decodedItem);
+                                $elasticTenders->indexTender($decodedItem, self::CDU_ALIAS);
+                            }
+                            $processedTenders++;
+                            break;
+
+                        case Tender::MARK_CONTRACT:
+                            self::dropPlan($decodedItem);
+                            self::dropTender($decodedItem);
+                            self::handleContract($decodedItem, $cdu_id);
+
+                            if ($elastic_indexing) {
+                                $elasticPlans->deleteItem($decodedItem);
+                                $elasticTenders->deleteItem($decodedItem);
                                 $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
                             }
                             $processedContracts++;
@@ -166,7 +171,7 @@ class TendersUpdates
      * @param $item
      * @param $cdu_id
      */
-    private static function handleDbTenders($item, $cdu_id) {
+    private static function handleTender($item, $cdu_id) {
         $count = DB::rowCount('SELECT * FROM ' . self::TABLE_TENDERS . ' WHERE tender_id = ?', [$item['tender_id']]);
 
         if ($count == 0) {
@@ -179,11 +184,20 @@ class TendersUpdates
     }
 
     /**
+     * Delete tender by id
+     * @param $item
+     */
+    private static function dropTender($item)
+    {
+        DB::execute('DELETE FROM ' . self::TABLE_TENDERS . ' WHERE tender_id = ?', [$item['tender_id']]);
+    }
+
+    /**
      * Update plan data in db
      * @param $item
      * @param $cdu_id
      */
-    private static function handleDbPlans($item, $cdu_id) {
+    private static function handlePlan($item, $cdu_id) {
         $count = PlansDB::rowCount('SELECT * FROM ' . self::TABLE_PLANS . ' WHERE plan_id = ?', [$item['tender_id']]);
 
         if ($count == 0) {
@@ -196,19 +210,28 @@ class TendersUpdates
     }
 
     /**
-     * Update plan data in db
+     * Delete plan by id
+     * @param $item
+     */
+    private static function dropPlan($item)
+    {
+        PlansDB::execute('DELETE FROM ' . self::TABLE_PLANS . ' WHERE plan_id = ?', [$item['tender_id']]);
+    }
+
+    /**
+     * Update contract data in db
      * @param $item
      * @param $cdu_id
      */
-    private static function handleDbContracts($item, $cdu_id) {
-        $count = contractsDB::rowCount('SELECT * FROM ' . self::TABLE_CONTRACTS . ' WHERE contract_id = ?', [$item['tender_id']]);
+    private static function handleContract($item, $cdu_id) {
+        $count = ContractsDB::rowCount('SELECT * FROM ' . self::TABLE_CONTRACTS . ' WHERE contract_id = ?', [$item['tender_id']]);
 
         if ($count == 0) {
-            contractsDB::execute('INSERT INTO ' . self::TABLE_CONTRACTS . ' ("contract_id", "response", "release_package", "cdu_id") VALUES (?, ?, ?, ?)', [$item['tender_id'], $item['response'], $item['release_package'], $cdu_id]);
+            ContractsDB::execute('INSERT INTO ' . self::TABLE_CONTRACTS . ' ("contract_id", "response", "release_package", "cdu_id") VALUES (?, ?, ?, ?)', [$item['tender_id'], $item['response'], $item['release_package'], $cdu_id]);
         }
 
         if ($count == 1) {
-            contractsDB::execute('UPDATE ' . self::TABLE_CONTRACTS . ' SET "response" = ?, "release_package" = ? WHERE "contract_id" = ?', [$item['response'], $item['release_package'], $item['tender_id']]);
+            ContractsDB::execute('UPDATE ' . self::TABLE_CONTRACTS . ' SET "response" = ?, "release_package" = ? WHERE "contract_id" = ?', [$item['response'], $item['release_package'], $item['tender_id']]);
         }
     }
 }

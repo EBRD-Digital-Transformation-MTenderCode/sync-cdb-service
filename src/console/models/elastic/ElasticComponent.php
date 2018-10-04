@@ -314,7 +314,6 @@ class ElasticComponent
         $this->indexDoc($docArr, $docArr['id']);
     }
 
-
     /**
      * Drop index
      * @return array
@@ -325,6 +324,22 @@ class ElasticComponent
 
         return Curl::sendRequest(
             $this->url . DIRECTORY_SEPARATOR . $this->index,
+            "DELETE",
+            "",
+            ['HTTPHEADER' => ['Content-Type:application/json']]
+        );
+    }
+
+    /**
+     * Delete item by _id
+     * @param $item
+     * @return array
+     * @throws HttpException
+     */
+    public function deleteItem($item)
+    {
+        return Curl::sendRequest(
+            $this->getTypePath() . $item['tender_id'],
             "DELETE",
             "",
             ['HTTPHEADER' => ['Content-Type:application/json']]
