@@ -75,7 +75,7 @@ Class Cpv
         }
 
         $cpvArray = self::getCpv();
-
+        $i = 0;
         foreach ($cpvArray as $keyId => $itemArr) {
             $data['id'] = $keyId;
             foreach ($itemArr as $keyLanguage => $item) {
@@ -83,8 +83,12 @@ Class Cpv
             }
 
             $elastic->indexCpv($data);
-            Yii::info("Cpv import to elastic add id #" . $data['id'], 'console-msg');
+            if(($i%1000) == 0) {
+                Yii::info("Cpv import 1000 rows to elastic", 'console-msg');
+            }
+            $i++;
         }
+        Yii::info("Complete import $i rows.", 'console-msg');
     }
 
     /**
