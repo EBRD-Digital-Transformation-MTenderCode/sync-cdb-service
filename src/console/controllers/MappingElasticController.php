@@ -1,10 +1,10 @@
 <?php
 namespace console\controllers;
 
-use console\models\elastic\ElasticComponent;
 use Yii;
 use yii\console\Controller;
 use yii\web\HttpException;
+use console\models\elastic\ElasticComponent;
 
 /**
  * Class MappingElasticController
@@ -37,6 +37,14 @@ class MappingElasticController extends Controller
         $elastic_type = Yii::$app->params['elastic_budgets_type'];
         $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
         $elastic->dropIndex();
+
+        $result = $elastic->setIndexSettings();
+
+        if ((int)$result['code'] != 200) {
+            Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+            exit(0);
+        }
+
         $result = $elastic->budgetsMapping();
 
         if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {

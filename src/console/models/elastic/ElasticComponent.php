@@ -92,7 +92,7 @@ class ElasticComponent
                 'id' => ['type' => 'keyword'],
                 'title' => ['type' => 'text'],
                 'description' => ['type' => 'text'],
-                'titlesOrDescriptions' => ['type' => 'text'],
+                'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'buyerRegion' => ['type' => 'keyword'],
                 'budgetStatuses' => ['type' => 'keyword'],
