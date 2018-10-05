@@ -415,6 +415,7 @@ class ElasticHelper
         $data = json_decode($response, 1);
         $data = $data['data'];
         $id = $data['id'];
+        $buyerName = '';
         $periodDeliveryFrom = [];
         $periodDeliveryTo = [];
 
@@ -465,6 +466,7 @@ class ElasticHelper
         $periodTenderStartDate = $data['tender']['tenderPeriod']['startDate'] ?? null;
 
         if (!empty($data['procuringEntity']['name'])) {
+            $buyerName = $data['procuringEntity']['name'];
             $buyersNames[$data['procuringEntity']['name']] = $data['procuringEntity']['name'];
         }
 
@@ -486,6 +488,7 @@ class ElasticHelper
             'periodEnquiryFrom'          => $periodTenderStartDate,
             'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
             'periodDeliveryTo'           => array_values($periodDeliveryTo),
+            'buyerName'                  => $buyerName,
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
         ];
@@ -507,6 +510,7 @@ class ElasticHelper
         $procedureType = $data['documents']['procurementMethodType'] ?? '';
         $amount = $data['value']['amount'] ?? 0;
         $titlesOrDescriptions = [];
+        $buyerName = '';
         $buyersNames = [];
 
         if (!empty($data['classification']['title'])) {
@@ -551,6 +555,7 @@ class ElasticHelper
         $periodContractStartDate = $data['period']['startDate'] ?? null;
 
         if (!empty($data['procuringEntity']['name'])) {
+            $buyerName = $data['procuringEntity']['name'];
             $buyersNames[$data['procuringEntity']['name']] = $data['procuringEntity']['name'];
         }
 
@@ -572,6 +577,7 @@ class ElasticHelper
             'periodEnquiryFrom'          => $periodContractStartDate,
             'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
             'periodDeliveryTo'           => array_values($periodDeliveryTo),
+            'buyerName'                  => $buyerName,
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
         ];
