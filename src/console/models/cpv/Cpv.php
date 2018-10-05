@@ -83,12 +83,13 @@ Class Cpv
             }
 
             $elastic->indexCpv($data);
+
             if(($i%1000) == 0) {
-                Yii::info("Cpv import 1000 rows to elastic", 'console-msg');
+                Yii::info("1000 CPV-rows imported into Elastic", 'console-msg');
             }
             $i++;
         }
-        Yii::info("Complete import $i rows.", 'console-msg');
+        Yii::info("CPV dictionary import completed ($i)", 'console-msg');
     }
 
     /**
