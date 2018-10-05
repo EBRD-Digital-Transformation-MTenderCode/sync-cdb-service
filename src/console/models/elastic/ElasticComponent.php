@@ -92,7 +92,7 @@ class ElasticComponent
                 'id' => ['type' => 'keyword'],
                 'title' => ['type' => 'text'],
                 'description' => ['type' => 'text'],
-                'titlesOrDescriptions' => ['type' => 'text'],
+                'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'buyerRegion' => ['type' => 'keyword'],
                 'budgetStatuses' => ['type' => 'keyword'],
@@ -101,6 +101,7 @@ class ElasticComponent
                 'classifications' => ['type' => 'keyword'],
                 'periodPlanningFrom' => ['type' => 'date'],
                 'periodPlanningTo' => ['type' => 'date'],
+                'modifiedDate' => ['type' => 'date'],
                 'buyerName' => ['type' => 'text'],
                 'buyersNames' => ['type' => 'text'],
                 'buyerIdentifier' => ['type' => 'keyword'],
@@ -195,6 +196,7 @@ class ElasticComponent
         $buyerMainSectoralActivity = '';
         $currency = '';
         $amount = 0;
+        $modifiedDate = null;
         $periodPlanningFrom = null;
         $periodPlanningTo = null;
         $titlesOrDescriptions = [];
@@ -208,6 +210,7 @@ class ElasticComponent
                 $id = $record['ocid'];
                 $data = $record['compiledRelease'];
 
+                $modifiedDate = $data['date'] ?? null;
                 $classifications[] = $data['tender']['classification']['id'] ?? '';
 
                 if (!empty($data['tender']['title'])) {
@@ -270,6 +273,7 @@ class ElasticComponent
             'classifications'            => array_values($classifications),
             'periodPlanningFrom'         => $periodPlanningFrom,
             'periodPlanningTo'           => $periodPlanningTo,
+            'modifiedDate'               => $modifiedDate,
             'buyerName'                  => $buyerName,
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
@@ -333,7 +337,6 @@ class ElasticComponent
         $this->indexDoc($docArr, $docArr['id']);
     }
 
-
     /**
      * Drop index
      * @return array
@@ -344,6 +347,22 @@ class ElasticComponent
 
         return Curl::sendRequest(
             $this->url . DIRECTORY_SEPARATOR . $this->index,
+            "DELETE",
+            "",
+            ['HTTPHEADER' => ['Content-Type:application/json']]
+        );
+    }
+
+    /**
+     * Delete item by _id
+     * @param $item
+     * @return array
+     * @throws HttpException
+     */
+    public function deleteItem($item)
+    {
+        return Curl::sendRequest(
+            $this->getTypePath() . $item['tender_id'],
             "DELETE",
             "",
             ['HTTPHEADER' => ['Content-Type:application/json']]
