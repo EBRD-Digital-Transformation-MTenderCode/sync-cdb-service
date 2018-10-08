@@ -95,7 +95,7 @@ class ElasticComponent
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'buyerRegion' => ['type' => 'keyword'],
-                'budgetStatuses' => ['type' => 'keyword'],
+                'budgetStatus' => ['type' => 'keyword'],
                 'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
                 'currency' => ['type' => 'keyword'],
                 'classifications' => ['type' => 'keyword'],
@@ -200,7 +200,6 @@ class ElasticComponent
         $periodPlanningFrom = null;
         $periodPlanningTo = null;
         $titlesOrDescriptions = [];
-        $budgetStatuses = [];
         $buyersNames = [];
         $classifications = [];
 
@@ -210,7 +209,14 @@ class ElasticComponent
                 $id = $record['ocid'];
                 $data = $record['compiledRelease'];
 
+                $amount = $data['planning']['budget']['amount']['amount'] ?? 0;
+                $currency = $data['planning']['budget']['amount']['currency'] ?? '';
+                $budgetStatus = $data['tender']['status'] ?? '';
+
                 $modifiedDate = $data['date'] ?? null;
+                $periodPlanningFrom = $data['planning']['budget']['period']['startDate'] ?? null;
+                $periodPlanningTo = $data['planning']['budget']['period']['endDate'] ?? null;
+
                 $classifications[] = $data['tender']['classification']['id'] ?? '';
 
                 if (!empty($data['tender']['title'])) {
@@ -242,22 +248,6 @@ class ElasticComponent
                     $buyerMainSectoralActivity = $part['details']['mainSectoralActivity'] ?? '';
                 }
             }
-
-            //STAGE
-            if ($record['ocid'] == $budget['stageId']) {
-                $data = $record['compiledRelease'];
-
-                $amount = $data['planning']['budget']['amount']['amount'] ?? 0;
-                $currency = $data['planning']['budget']['amount']['currency'] ?? '';
-                $periodPlanningFrom = $data['planning']['budget']['period']['startDate'] ?? null;
-                $periodPlanningTo = $data['planning']['budget']['period']['endDate'] ?? null;
-
-                if (isset($data['tag']) && is_array($data['tag'])) {
-                    foreach ($data['tag'] as $tag) {
-                        $budgetStatuses[$tag] = $tag;
-                    }
-                }
-            }
         }
 
         $docArr = [
@@ -267,7 +257,7 @@ class ElasticComponent
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
             'buyerRegion'                => $buyerRegion,
-            'budgetStatuses'             => array_values($budgetStatuses),
+            'budgetStatus'               => $budgetStatus,
             'amount'                     => $amount,
             'currency'                   => $currency,
             'classifications'            => array_values($classifications),
