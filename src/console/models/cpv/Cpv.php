@@ -22,7 +22,7 @@ Class Cpv
             self::handle();
         } catch (HttpException $exception) {
             Yii::error('CURL ERROR[' . $exception->getCode() . ']. ' . $exception->getMessage(), 'sync-info');
-            Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
+            //Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
         }
     }
 

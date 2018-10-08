@@ -26,13 +26,13 @@ class ContractsListHandler
             } catch(PDOException $exception) {
                 DB::dropInstance();
                 Yii::error('DB ERROR: ' . str_replace("\n", " ", $exception->getMessage()), 'sync-info');
-                Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
+                //Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
                 Yii::info("...........Sleep...............", 'sync-info');
                 gc_collect_cycles();
                 sleep($delay);
             } catch (HttpException $exception) {
                 Yii::error('CURL ERROR[' . $exception->getCode() . ']: ' . $exception->getMessage(), 'sync-info');
-                Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
+                //Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
                 Yii::info("...........Sleep...............", 'sync-info');
                 gc_collect_cycles();
                 sleep($delay);
@@ -79,7 +79,7 @@ class ContractsListHandler
             UpdateTime::updateOffset($offset);
 
             Yii::info("Nothing to update.", 'sync-info');
-            Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
+            //Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
             Yii::info("...........Sleep...............", 'sync-info');
 
             gc_collect_cycles();
