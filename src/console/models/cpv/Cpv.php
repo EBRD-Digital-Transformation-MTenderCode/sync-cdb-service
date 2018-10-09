@@ -75,18 +75,21 @@ Class Cpv
         }
 
         $cpvArray = self::getCpv();
-
-        foreach ($cpvArray as $key => $item) {
-            $data['id'] = $item['id'];
-            $data['name'] = [
-                'en' => $item['name_en'],
-                'uk' => $item['name_uk'],
-                'ru' => $item['name_ru']
-            ];
+        $i = 0;
+        foreach ($cpvArray as $keyId => $itemArr) {
+            $data['id'] = $keyId;
+            foreach ($itemArr as $keyLanguage => $item) {
+                $data['name'][$keyLanguage] = $item['name'];
+            }
 
             $elastic->indexCpv($data);
-            Yii::info("Cpv import to elastic add id #" . $data['id'], 'console-msg');
+
+            if(($i%1000) == 0) {
+                Yii::info("1000 CPV-rows imported into Elastic", 'console-msg');
+            }
+            $i++;
         }
+        Yii::info("CPV dictionary import completed ($i)", 'console-msg');
     }
 
     /**
@@ -95,48 +98,21 @@ Class Cpv
      */
     private static function getCpv()
     {
-        $arrLanguages = ['en', 'uk', 'ru'];
-        $defaultLanguage = 'en';
-        $inputData = [];
-
-        // input data
-        foreach ($arrLanguages as $language) {
-            $file = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'source_data' . DIRECTORY_SEPARATOR . 'cpv' . DIRECTORY_SEPARATOR . 'cpv_' . $language . '.json';
-
-            if (file_exists($file)) {
-                $inputData[$language] = json_decode(file_get_contents($file), true);
-            }
-        }
-
         $result = [];
 
+        $file = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'source_data' . DIRECTORY_SEPARATOR . 'cpv' . DIRECTORY_SEPARATOR . 'cpv.csv';
+        $csv = array_map('str_getcsv', file($file));
 
-        if (!isset($inputData[$defaultLanguage])) {
-            throw new \yii\web\NotFoundHttpException("Json file not found!");
-        }
+        foreach ($csv as $item) {
+            $id = trim($item[0]);
+            $name = trim($item[3]);
+            $language = trim($item[5]);
 
-        // Defining a parent id for a nodes
-        foreach ($inputData[$defaultLanguage] as $key => $val) {
-
-            // splitting the cpv code into categories/digits
-            preg_match('/^([0-9]{2})([0-9])([0-9])([0-9])([0-9]{3})\-[0-9]$/', $key, $digits);
-
-            $cpvId = $digits[0];
-
-            $result[$cpvId] = [
-                'id' => $cpvId,
-                'name_en' => trim($inputData['en'][$key]),
-                'name_uk' => trim($inputData['uk'][$key]) ?? null,
-                'name_ru' => trim($inputData['ru'][$key]) ?? null,
+            $result[$id][$language] = [
+                'id' => $id,
+                'name' => $name,
             ];
         }
-
-        $result["99999999-9"] = [
-            'id' => "99999999-9",
-            'name_en' => "Not categorized",
-            'name_uk' => "Не визначено",
-            'name_ru' => "Не определен",
-        ];
 
         return $result;
     }
