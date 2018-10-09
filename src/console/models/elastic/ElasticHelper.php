@@ -90,13 +90,27 @@ class ElasticHelper
             'dynamic' => 'strict',
             '_all' => ['enabled' => false],
             'properties' => [
-                'id' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                'id' => ['type' => 'text'],
                 'name' => [
                     'properties' => [
                         'en' => ['type' => 'text'],
                         'ro' => ['type' => 'text'],
                         'ru' => ['type' => 'text'],
-                    ]
+                    ],
+                ],
+                'idOrName' => [
+                    'properties' => [
+                        'en' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                        'ro' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                        'ru' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
+                    ],
+                ],
+                'idOrNameStrict' => [
+                    'properties' => [
+                        'en' => ['type' => 'text'],
+                        'ro' => ['type' => 'text'],
+                        'ru' => ['type' => 'text'],
+                    ],
                 ],
             ],
         ];
@@ -586,13 +600,15 @@ class ElasticHelper
     }
 
     public static function prepareCpvToElastic($data) {
-
         $id = $data['id'];
         $name = $data['name'];
+        $idOrName = $data['idOrName'];
 
         $docArr = [
-            'id' => $id,
-            'name' => $name,
+            'id'             => $id,
+            'name'           => $name,
+            'idOrName'       => $idOrName,
+            'idOrNameStrict' => $idOrName,
         ];
 
         return $docArr;
