@@ -1,11 +1,15 @@
 <?php
 namespace console\controllers;
 
-use console\models\cpv\Cpv;
-use yii\console\Controller;
 use Yii;
+use yii\console\Controller;
+use console\models\cpv\Cpv;
 
-Class CpvController extends Controller
+/**
+ * Class CpvController
+ * @package console\controllers
+ */
+class CpvController extends Controller
 {
     public function actionImport()
     {

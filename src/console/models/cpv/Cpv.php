@@ -1,17 +1,18 @@
 <?php
-
 namespace console\models\cpv;
 
-use console\models\elastic\ElasticComponent;
 use Yii;
 use yii\web\HttpException;
+use console\models\elastic\ElasticComponent;
 
 /**
  * Class Cpv
  * @package console\models\cpv
  */
-Class Cpv
+class Cpv
 {
+    const DIVIDER = ' ';
+
     /**
      * Import CPV
      */
@@ -58,7 +59,6 @@ Class Cpv
     /**
      * @throws HttpException
      * @throws \yii\web\ForbiddenHttpException
-     * @throws \yii\web\NotFoundHttpException
      */
     public static function handle()
     {
@@ -67,7 +67,6 @@ Class Cpv
             Yii::$app->params['elastic_cpv_index'],
             Yii::$app->params['elastic_cpv_type']
         );
-
 
         $result = $elastic->checkMapping();
         if ($result['code'] != 200) {
@@ -80,6 +79,7 @@ Class Cpv
             $data['id'] = $keyId;
             foreach ($itemArr as $keyLanguage => $item) {
                 $data['name'][$keyLanguage] = $item['name'];
+                $data['idOrName'][$keyLanguage] = $keyId . self::DIVIDER . $item['name'];
             }
 
             $elastic->indexCpv($data);
@@ -94,7 +94,6 @@ Class Cpv
 
     /**
      * @return array
-     * @throws \yii\web\NotFoundHttpException
      */
     private static function getCpv()
     {
