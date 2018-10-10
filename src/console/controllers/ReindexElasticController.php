@@ -110,6 +110,13 @@ class ReindexElasticController extends Controller
                 exit(0);
             }
 
+            $result = $elastic->setIndexSettings();
+
+            if ((int)$result['code'] != 200) {
+                Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+                exit(0);
+            }
+
             $result = $elastic->budgetsMapping();
 
             if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
