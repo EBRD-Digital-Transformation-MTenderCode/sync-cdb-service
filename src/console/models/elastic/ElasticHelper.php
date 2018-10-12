@@ -429,27 +429,38 @@ class ElasticHelper
         $data = json_decode($response, 1);
         $data = $data['data'];
         $id = $data['id'];
+        $title = '';
+        $description = '';
         $buyerName = '';
         $periodDeliveryFrom = [];
         $periodDeliveryTo = [];
 
         $entityId = $data['planID'];
+        $modifiedDate = $data['dateModified'] ?? null;
         $procedureType = $data['tender']['procurementMethodType'] ?? '';
         $amount = $data['budget']['amount'] ?? 0;
         $classifications[] = $data['classification']['id'] ?? '';
         $titlesOrDescriptions = [];
         $buyersNames = [];
 
+        if (!empty($data['budget']['description'])) {
+            $title = $data['budget']['description'];
+            $titlesOrDescriptions[$data['budget']['description']] = $data['budget']['description'];
+        }
+
+        if (!empty($data['budget']['notes'])) {
+            $description = $data['budget']['notes'];
+            $titlesOrDescriptions[$data['budget']['notes']] = $data['budget']['notes'];
+        }
+
         if (!empty($data['classification']['title'])) {
-            $titlesOrDescriptions[
-            $data['classification']['title']
-            ] = $data['classification']['title'];
+            $titlesOrDescriptions[$data['classification']['title']] = $data['classification']['title'];
         }
+
         if (!empty($data['classification']['description'])) {
-            $titlesOrDescriptions[
-            $data['classification']['description']
-            ] = $data['classification']['description'];
+            $titlesOrDescriptions[$data['classification']['description']] = $data['classification']['description'];
         }
+
         if (isset($data['lots']) && is_array($data['lots'])) {
             foreach ($data['lots'] as $item) {
                 if (!empty(($item['title']))) {
@@ -496,9 +507,12 @@ class ElasticHelper
             'entityId'                   => $entityId,
             'procedureType'              => $procedureType,
             'amount'                     => $amount,
+            'title'                      => $title,
+            'description'                => $description,
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
             'classifications'            => $classifications,
+            'modifiedDate'               => $modifiedDate,
             'periodEnquiryFrom'          => $periodTenderStartDate,
             'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
             'periodDeliveryTo'           => array_values($periodDeliveryTo),
@@ -521,21 +535,30 @@ class ElasticHelper
         $classifications = [];
 
         $entityId = $data['contractID'];
+        $modifiedDate = $data['dateModified'] ?? null;
         $procedureType = $data['documents']['procurementMethodType'] ?? '';
         $amount = $data['value']['amount'] ?? 0;
         $titlesOrDescriptions = [];
+        $title = '';
+        $description = '';
         $buyerName = '';
         $buyersNames = [];
 
+        if (!empty($data['title'])) {
+            $title = $data['title'];
+            $titlesOrDescriptions[$data['title']] = $data['title'];
+        }
+
+        if (!empty($data['description'])) {
+            $description = $data['description'];
+            $titlesOrDescriptions[$data['description']] = $data['description'];
+        }
+
         if (!empty($data['classification']['title'])) {
-            $titlesOrDescriptions[
-            $data['classification']['title']
-            ] = $data['classification']['title'];
+            $titlesOrDescriptions[$data['classification']['title']] = $data['classification']['title'];
         }
         if (!empty($data['classification']['description'])) {
-            $titlesOrDescriptions[
-            $data['classification']['description']
-            ] = $data['classification']['description'];
+            $titlesOrDescriptions[$data['classification']['description']] = $data['classification']['description'];
         }
         if (isset($data['lots']) && is_array($data['lots'])) {
             foreach ($data['lots'] as $item) {
@@ -585,9 +608,12 @@ class ElasticHelper
             'entityId'                   => $entityId,
             'procedureType'              => $procedureType,
             'amount'                     => $amount,
+            'title'                      => $title,
+            'description'                => $description,
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
             'classifications'            => $classifications,
+            'modifiedDate'               => $modifiedDate,
             'periodEnquiryFrom'          => $periodContractStartDate,
             'periodDeliveryFrom'         => array_values($periodDeliveryFrom),
             'periodDeliveryTo'           => array_values($periodDeliveryTo),

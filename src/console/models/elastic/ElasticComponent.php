@@ -225,8 +225,8 @@ class ElasticComponent
                 }
 
                 if (!empty($data['tender']['description'])) {
-                    $title = $data['tender']['description'];
-                    $titlesOrDescriptions[$title] = $title;
+                    $description = $data['tender']['description'];
+                    $titlesOrDescriptions[$description] = $description;
                 }
 
                 if (isset($data['parties']) && is_array($data['parties'])) {
