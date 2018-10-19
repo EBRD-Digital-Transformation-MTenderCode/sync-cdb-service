@@ -34,6 +34,8 @@ class TendersUpdates
                 self::handle();
             } catch(PDOException $exception) {
                 DB::dropInstance();
+                PlansDB::dropInstance();
+                ContractsDB::dropInstance();
                 Yii::error('DB ERROR: ' . str_replace("\n", " ", $exception->getMessage()), 'sync-info');
                 Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
                 Yii::info("...........Sleep...............", 'sync-info');
@@ -104,6 +106,9 @@ class TendersUpdates
             Yii::info("Nothing to update.", 'sync-info');
             Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
             Yii::info("...........Sleep...............", 'sync-info');
+            DB::dropInstance();
+            PlansDB::dropInstance();
+            ContractsDB::dropInstance();
             gc_collect_cycles();
             sleep($delay);
         } else {
