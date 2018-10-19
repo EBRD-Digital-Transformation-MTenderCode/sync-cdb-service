@@ -106,6 +106,9 @@ class TendersUpdates
             Yii::info("Nothing to update.", 'sync-info');
             Yii::info("Memory usage: " . memory_get_usage(), 'sync-info');
             Yii::info("...........Sleep...............", 'sync-info');
+            DB::dropInstance();
+            PlansDB::dropInstance();
+            ContractsDB::dropInstance();
             gc_collect_cycles();
             sleep($delay);
         } else {
