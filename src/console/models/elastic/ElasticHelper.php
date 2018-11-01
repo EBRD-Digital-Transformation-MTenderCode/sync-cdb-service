@@ -54,6 +54,7 @@ class ElasticHelper
                 'deliveriesRegions' => ['type' => 'keyword'],
                 'procedureType' => ['type' => 'keyword'],
                 'procedureStatus' => ['type' => 'keyword'],
+                'procedureStatusDetails' => ['type' => 'keyword'],
                 'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
                 'currency' => ['type' => 'keyword'],
                 'classifications' => ['type' => 'keyword'],
@@ -171,11 +172,12 @@ class ElasticHelper
             }
 
             $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
-            $procedureStatus = $ms['compiledRelease']['tender']['statusDetails'] ?? '';
             $amount = $ms['compiledRelease']['tender']['value']['amount'] ?? 0;
             $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
             $publishedDate = $tender['releasePackage']['publishedDate'] ?? null;
             $modifiedDate = $ms['compiledRelease']['date'] ?? null;
+            $procedureStatus = $stage['compiledRelease']['tender']['status'] ?? '';
+            $procedureStatusDetails = $stage['compiledRelease']['tender']['statusDetails'] ?? '';
             $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
             $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
             $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
@@ -266,6 +268,7 @@ class ElasticHelper
                 'deliveriesRegions'         => array_values($deliveriesRegions),
                 'procedureType'             => $procedureType,
                 'procedureStatus'           => $procedureStatus,
+                'procedureStatusDetails'    => $procedureStatusDetails,
                 'amount'                    => $amount,
                 'currency'                  => $currency,
                 'classifications'           => array_values($classifications),
