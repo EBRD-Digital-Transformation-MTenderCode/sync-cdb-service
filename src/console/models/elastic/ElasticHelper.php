@@ -160,6 +160,8 @@ class ElasticHelper
 
         //create data array and index doc
         if (!empty($ms) && !empty($stage)) {
+            $titlesOrDescriptions[$id] = $id;
+
             if (!empty($ms['compiledRelease']['tender']['title'])) {
                 $title = $ms['compiledRelease']['tender']['title'];
                 $titlesOrDescriptions[$title] = $title;
@@ -171,11 +173,13 @@ class ElasticHelper
             }
 
             $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
-            $procedureStatus = $ms['compiledRelease']['tender']['statusDetails'] ?? '';
             $amount = $ms['compiledRelease']['tender']['value']['amount'] ?? 0;
             $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
             $publishedDate = $tender['releasePackage']['publishedDate'] ?? null;
             $modifiedDate = $ms['compiledRelease']['date'] ?? null;
+            $procedureStatus = $stage['compiledRelease']['tender']['status'] ?? '';
+            $procedureStatus .= '.';
+            $procedureStatus .= $stage['compiledRelease']['tender']['statusDetails'] ?? '';
             $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
             $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
             $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
@@ -324,7 +328,11 @@ class ElasticHelper
             $titlesOrDescriptions[$description] = $description;
         }
 
-        $entityId = $data['data']['tenderID'] ?? '';
+        if (!empty($data['data']['tenderID'])) {
+            $entityId = $data['data']['tenderID'];
+            $titlesOrDescriptions[$entityId] = $entityId;
+        }
+
         $procedureType = $data['data']['procurementMethodType'] ?? '';
         $procedureStatus = $data['data']['status'] ?? '';
         $buyerRegion = $data['data']['procuringEntity']['address']['region'] ?? '';
@@ -443,6 +451,8 @@ class ElasticHelper
         $titlesOrDescriptions = [];
         $buyersNames = [];
 
+        $titlesOrDescriptions[$entityId] = $entityId;
+
         if (!empty($data['budget']['description'])) {
             $title = $data['budget']['description'];
             $titlesOrDescriptions[$data['budget']['description']] = $data['budget']['description'];
@@ -543,6 +553,8 @@ class ElasticHelper
         $description = '';
         $buyerName = '';
         $buyersNames = [];
+
+        $titlesOrDescriptions[$entityId] = $entityId;
 
         if (!empty($data['title'])) {
             $title = $data['title'];
