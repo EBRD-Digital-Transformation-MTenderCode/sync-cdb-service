@@ -54,7 +54,6 @@ class ElasticHelper
                 'deliveriesRegions' => ['type' => 'keyword'],
                 'procedureType' => ['type' => 'keyword'],
                 'procedureStatus' => ['type' => 'keyword'],
-                'procedureStatusDetails' => ['type' => 'keyword'],
                 'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
                 'currency' => ['type' => 'keyword'],
                 'classifications' => ['type' => 'keyword'],
@@ -179,7 +178,8 @@ class ElasticHelper
             $publishedDate = $tender['releasePackage']['publishedDate'] ?? null;
             $modifiedDate = $ms['compiledRelease']['date'] ?? null;
             $procedureStatus = $stage['compiledRelease']['tender']['status'] ?? '';
-            $procedureStatusDetails = $stage['compiledRelease']['tender']['statusDetails'] ?? '';
+            $procedureStatus .= '.';
+            $procedureStatus .= $stage['compiledRelease']['tender']['statusDetails'] ?? '';
             $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
             $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
             $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
@@ -270,7 +270,6 @@ class ElasticHelper
                 'deliveriesRegions'         => array_values($deliveriesRegions),
                 'procedureType'             => $procedureType,
                 'procedureStatus'           => $procedureStatus,
-                'procedureStatusDetails'    => $procedureStatusDetails,
                 'amount'                    => $amount,
                 'currency'                  => $currency,
                 'classifications'           => array_values($classifications),
