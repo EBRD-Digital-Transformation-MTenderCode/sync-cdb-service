@@ -7,6 +7,30 @@ class ElasticHelper
 {
     const ROLE_BUYER = 'buyer';
 
+    const TENDERS_STATUSES = [
+        'active.clarification'              => 'clarificartion',
+        'active.tendering'                  => 'tendering',
+        'active.auction'                    => 'auction',
+        'unsuccessful.empty'                => 'unsuccessful',
+        'active.awarding'                   => 'awarding',
+        'active.awardedContractPreparation' => 'awarded',
+        'active.suspended'                  => 'suspended',
+        'complete.empty'                    => 'complete',
+        'cancelled.empty'                   => 'cancelled',
+    ];
+
+    const TENDERS_PRZ_STATUSES = [
+        'active.enquiries'     => 'clarificartion',
+        'active.tendering'     => 'tendering',
+        'active.auction'       => 'auction',
+        'unsuccessful'         => 'unsuccessful',
+        'active.qualification' => 'awarding',
+        'active.awarded'       => 'awarded',
+        'complete'             => 'complete',
+        'cancelled'            => 'cancelled',
+        'active'               => 'published',
+    ];
+
     public static function getSettings() {
         return
         [
@@ -180,6 +204,7 @@ class ElasticHelper
             $procedureStatus = $stage['compiledRelease']['tender']['status'] ?? '';
             $procedureStatus .= '.';
             $procedureStatus .= $stage['compiledRelease']['tender']['statusDetails'] ?? '';
+            $procedureStatus = self::TENDERS_STATUSES[$procedureStatus] ?? '';
             $periodEnquiryFrom = $stage['compiledRelease']['tender']['enquiryPeriod']['startDate'] ?? null;
             $periodEnquiryTo = $stage['compiledRelease']['tender']['enquiryPeriod']['endDate'] ?? null;
             $periodOfferFrom = $stage['compiledRelease']['tender']['tenderPeriod']['startDate'] ?? null;
@@ -335,6 +360,7 @@ class ElasticHelper
 
         $procedureType = $data['data']['procurementMethodType'] ?? '';
         $procedureStatus = $data['data']['status'] ?? '';
+        $procedureStatus = self::TENDERS_PRZ_STATUSES[$procedureStatus] ?? '';
         $buyerRegion = $data['data']['procuringEntity']['address']['region'] ?? '';
 
         if (isset($data['data']['value']['amount'])) {
