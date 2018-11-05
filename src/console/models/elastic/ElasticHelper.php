@@ -8,7 +8,7 @@ class ElasticHelper
     const ROLE_BUYER = 'buyer';
 
     const TENDERS_STATUSES = [
-        'active.clarification'              => 'clarificartion',
+        'active.clarification'              => 'clarification',
         'active.tendering'                  => 'tendering',
         'active.auction'                    => 'auction',
         'unsuccessful.empty'                => 'unsuccessful',
@@ -20,7 +20,7 @@ class ElasticHelper
     ];
 
     const TENDERS_PRZ_STATUSES = [
-        'active.enquiries'     => 'clarificartion',
+        'active.enquiries'     => 'clarification',
         'active.tendering'     => 'tendering',
         'active.auction'       => 'auction',
         'unsuccessful'         => 'unsuccessful',
