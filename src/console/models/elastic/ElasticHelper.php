@@ -31,32 +31,34 @@ class ElasticHelper
         'active'               => 'published',
     ];
 
+    /**
+     * Return index settings array
+     * @return array
+     */
     public static function getSettings() {
-        return
-        [
-            'settings' =>
-                ['analysis' =>
-                    [
-                        'filter' =>
-                            ['ngram_filter' =>
-                                [
-                                    'type' => 'ngram',
-                                    'min_gram' => 3,
-                                    'max_gram' => 20
-                                ]
-                            ]
-                        ,
-                        'analyzer' =>
-                            ['ngram_analyzer' =>
-                                [
-                                    'tokenizer' => 'standard',
-                                    'filter' => ['lowercase', 'ngram_filter']
-                                ]
-                            ]
-                    ]
-                ]
+        return [
+            'settings' => [
+                'max_result_window' => 1000000,
+                'analysis' => [
+                    'filter' => [
+                        'ngram_filter' => [
+                            'type' => 'ngram',
+                            'min_gram' => 3,
+                            'max_gram' => 20
+                        ],
+                    ],
+                    'analyzer' => [
+                        'ngram_analyzer' => [
+                            'tokenizer' => 'standard',
+                            'filter' => [
+                                'lowercase',
+                                'ngram_filter',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
-
     }
 
     /**
