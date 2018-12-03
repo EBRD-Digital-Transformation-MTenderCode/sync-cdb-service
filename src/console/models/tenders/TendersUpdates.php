@@ -133,7 +133,7 @@ class TendersUpdates
                             self::handleTender($decodedItem, $cdu_id);
 
                             if ($elastic_indexing) {
-                                $elasticPlans->deleteItem($decodedItem);
+                                //$elasticPlans->deleteItem($decodedItem);
                                 $elasticTenders->indexTender($decodedItem, self::CDU_ALIAS);
                             }
                             $processedTenders++;
@@ -145,8 +145,8 @@ class TendersUpdates
                             self::handleContract($decodedItem, $cdu_id);
 
                             if ($elastic_indexing) {
-                                $elasticPlans->deleteItem($decodedItem);
-                                $elasticTenders->deleteItem($decodedItem);
+                                //$elasticPlans->deleteItem($decodedItem);
+                                //$elasticTenders->deleteItem($decodedItem);
                                 $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
                             }
                             $processedContracts++;
