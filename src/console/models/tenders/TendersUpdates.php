@@ -129,7 +129,7 @@ class TendersUpdates
                             break;
 
                         case Tender::MARK_TENDER:
-                            self::dropPlan($decodedItem);
+                            //self::dropPlan($decodedItem);
                             self::handleTender($decodedItem, $cdu_id);
 
                             if ($elastic_indexing) {
@@ -140,8 +140,8 @@ class TendersUpdates
                             break;
 
                         case Tender::MARK_CONTRACT:
-                            self::dropPlan($decodedItem);
-                            self::dropTender($decodedItem);
+                            //self::dropPlan($decodedItem);
+                            //self::dropTender($decodedItem);
                             self::handleContract($decodedItem, $cdu_id);
 
                             if ($elastic_indexing) {
