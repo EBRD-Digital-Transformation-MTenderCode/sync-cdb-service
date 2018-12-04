@@ -7,6 +7,14 @@ class ElasticHelper
 {
     const ROLE_BUYER = 'buyer';
 
+    const PROCEDURE_TYPE_MV = 'mv';
+    const PROCEDURE_TYPE_SV = 'sv';
+    const PROCEDURE_TYPE_OT = 'ot';
+
+    const PROCUREMENT_CATEGORY_GOODS    = 'goods';
+    const PROCUREMENT_CATEGORY_SERVICES = 'services';
+    const PROCUREMENT_CATEGORY_WORKS    = 'works';
+
     const TENDERS_STATUSES = [
         'active.clarification'              => 'clarification',
         'active.tendering'                  => 'tendering',
@@ -198,8 +206,33 @@ class ElasticHelper
                 $titlesOrDescriptions[$description] = $description;
             }
 
-            $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
+            $mainProcurementCategory = $ms['compiledRelease']['tender']['mainProcurementCategory'] ?? '';
             $amount = $ms['compiledRelease']['tender']['value']['amount'] ?? 0;
+
+            $procedureType = self::PROCEDURE_TYPE_OT;
+
+            switch ($mainProcurementCategory) {
+                case self::PROCUREMENT_CATEGORY_GOODS:
+                case self::PROCUREMENT_CATEGORY_SERVICES:
+                    if ($amount <= 400000) {
+                        $procedureType = self::PROCEDURE_TYPE_SV;
+                    }
+
+                    if ($amount < 80000) {
+                        $procedureType = self::PROCEDURE_TYPE_MV;
+                    }
+                    break;
+                case self::PROCUREMENT_CATEGORY_WORKS:
+                    if ($amount <= 1500000) {
+                        $procedureType = self::PROCEDURE_TYPE_SV;
+                    }
+
+                    if ($amount < 100000) {
+                        $procedureType = self::PROCEDURE_TYPE_MV;
+                    }
+                    break;
+            }
+
             $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
             $publishedDate = $tender['releasePackage']['publishedDate'] ?? null;
             $modifiedDate = $ms['compiledRelease']['date'] ?? null;
