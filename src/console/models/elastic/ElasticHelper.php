@@ -162,6 +162,7 @@ class ElasticHelper
     public static function prepareTenderToElastic($tender, $cdb) {
         $id = $tender['item_id'];
         $stageId = $tender['stageId'];
+        $msId = $tender['msId'];
         $title = '';
         $description = '';
         $buyerRegion = '';
@@ -183,7 +184,7 @@ class ElasticHelper
 
         //get stage and ms item
         foreach ($tender['records'] as $record) {
-            if ($record['ocid'] == $id) {
+            if ($record['ocid'] == $msId) {
                 $ms = $record;
             }
 

@@ -112,6 +112,7 @@ class Tender
             if (in_array($type, self::MARKS)) {
                 $item['type'] = $type;
                 $item['stageId'] = $record['ocid'];
+                $item['msId'] = $item['tender_id'];
 
                 if ($type == self::MARK_CONTRACT) {
                     $item['item_id'] = $item['tender_id'] . self::DIVIDER . $contractCounter;
