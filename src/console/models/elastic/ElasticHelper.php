@@ -322,7 +322,7 @@ class ElasticHelper
             $docArr = [
                 'cdb'                       => $cdb,
                 'id'                        => $id,
-                'entityId'                  => $id,
+                'entityId'                  => $msId,
                 'title'                     => $title,
                 'description'               => $description,
                 'titlesOrDescriptions'      => array_values($titlesOrDescriptions),
