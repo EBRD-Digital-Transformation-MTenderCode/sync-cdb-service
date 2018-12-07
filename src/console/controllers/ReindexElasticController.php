@@ -37,12 +37,16 @@ class ReindexElasticController extends Controller
      */
     public function actionBudgets()
     {
+        Yii::info("This action is temporarly disabled", 'console-msg');
+
+        /*
         try {
             $this->reindexBudgets();
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
+        */
 
         Yii::info("Elastic indexing Budgets is complete", 'console-msg');
     }
@@ -52,12 +56,16 @@ class ReindexElasticController extends Controller
      */
     public function actionTenders()
     {
+        Yii::info("This action is temporarly disabled", 'console-msg');
+
+        /*
         try {
             $this->reindexTenders();
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
+        */
 
         Yii::info("Elastic indexing Tenders is complete", 'console-msg');
     }
@@ -67,12 +75,16 @@ class ReindexElasticController extends Controller
      */
     public function actionPlans()
     {
+        Yii::info("This action is temporarly disabled", 'console-msg');
+
+        /*
         try {
             $this->indexPlans();
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
+        */
 
         Yii::info("Elastic indexing Plans is complete", 'console-msg');
     }
@@ -82,12 +94,16 @@ class ReindexElasticController extends Controller
      */
     public function actionContracts()
     {
+        Yii::info("This action is temporarly disabled", 'console-msg');
+
+        /*
         try {
             $this->indexContracts();
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
+        */
 
         Yii::info("Elastic indexing Contracts is complete", 'console-msg');
     }
