@@ -116,45 +116,41 @@ class TendersUpdates
                 try {
                     DB::beginTransaction();
 
-                    $decodedItem = Tender::decode($item);
+                    $decodedItems = Tender::decode($item);
 
-                    switch ($decodedItem['type']) {
-                        case Tender::MARK_PLAN:
-                            self::handlePlan($decodedItem, $cdu_id);
+                    foreach ($decodedItems as $decodedItem) {
+                        switch ($decodedItem['type']) {
+                            case Tender::MARK_PLAN:
+                                self::handlePlan($decodedItem, $cdu_id);
 
-                            if ($elastic_indexing) {
-                                $elasticPlans->indexPlan($decodedItem, self::CDU_ALIAS);
-                            }
-                            $processedPlans++;
-                            break;
+                                if ($elastic_indexing) {
+                                    $elasticPlans->indexPlan($decodedItem, self::CDU_ALIAS);
+                                }
+                                $processedPlans++;
+                                break;
 
-                        case Tender::MARK_TENDER:
-                            //self::dropPlan($decodedItem);
-                            self::handleTender($decodedItem, $cdu_id);
+                            case Tender::MARK_TENDER:
+                                self::handleTender($decodedItem, $cdu_id);
 
-                            if ($elastic_indexing) {
-                                //$elasticPlans->deleteItem($decodedItem);
-                                $elasticTenders->indexTender($decodedItem, self::CDU_ALIAS);
-                            }
-                            $processedTenders++;
-                            break;
+                                if ($elastic_indexing) {
+                                    $elasticTenders->indexTender($decodedItem, self::CDU_ALIAS);
+                                }
+                                $processedTenders++;
+                                break;
 
-                        case Tender::MARK_CONTRACT:
-                            //self::dropPlan($decodedItem);
-                            //self::dropTender($decodedItem);
-                            self::handleContract($decodedItem, $cdu_id);
+                            case Tender::MARK_CONTRACT:
+                                self::handleContract($decodedItem, $cdu_id);
 
-                            if ($elastic_indexing) {
-                                //$elasticPlans->deleteItem($decodedItem);
-                                //$elasticTenders->deleteItem($decodedItem);
-                                $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
-                            }
-                            $processedContracts++;
-                            break;
+                                if ($elastic_indexing) {
+                                    $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
+                                }
+                                $processedContracts++;
+                                break;
 
 
-                        default:
-                            break;
+                            default:
+                                break;
+                        }
                     }
 
                     DB::execute('DELETE FROM ' . self::TABLE_TENDERS_UPDATES . ' WHERE "tender_id" = ?', [$item['tender_id']]);

@@ -99,37 +99,32 @@ class Tender
      */
     public static function decode($item)
     {
+        $result = [];
+
         $responseArray = json_decode($item['response'], 1);
         $item['records'] = $responseArray['records'];
         $item['releasePackage'] = json_decode($item['release_package'], 1);
-        $item['type'] = '';
-        $item['stageId'] = '';
+        $contractCounter = 0;
 
-        foreach ($responseArray['actualReleases'] as $actualRelease) {
-            $type = explode(self::DIVIDER, substr($actualRelease['ocid'], strlen($item['tender_id'])))[1] ?? null;
-            $item['item_id'] = $item['tender_id'];
-            if (in_array($type, self::MARKS)) {
-                $item['type'] = $type;
-                $item['stageId'] = $actualRelease['ocid'];
-                break;
-            }
-        }
-
-        $ocids = [];
         foreach ($responseArray['records'] as $record) {
             $type = explode(self::DIVIDER, substr($record['ocid'], strlen($item['tender_id'])))[1] ?? null;
 
             if (in_array($type, self::MARKS)) {
-                $ocids[$type] = $record['ocid'];
+                $item['type'] = $type;
+                $item['stageId'] = $record['ocid'];
+
+                if ($type == self::MARK_CONTRACT) {
+                    $item['item_id'] = $item['tender_id'] . self::DIVIDER . $contractCounter;
+                    $contractCounter++;
+                } else {
+                    $item['item_id'] = $item['tender_id'];
+                }
+
+                $result[] = $item;
             }
         }
 
-        //set EV record as STAGE for CONTRACTS
-        if (isset($ocids[self::MARK_CONTRACT]) && isset($ocids[self::MARK_TENDER])) {
-            $item['stageId'] = $ocids[self::MARK_TENDER];
-        }
-
-        return $item;
+        return $result;
     }
 
     /**
