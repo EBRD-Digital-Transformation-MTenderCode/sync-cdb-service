@@ -13,6 +13,9 @@
 ./yii migrate --migrationPath=@app/migrations/contracts --db=db_contracts
 ./yii migrate --migrationPath=@app/migrations/contracts_prz --db=db_contracts
 
+#mapping
+./yii mapping-elastic/all
+
 # actions
 ./yii budgets/get-changed-list
 ./yii budgets/get-updates

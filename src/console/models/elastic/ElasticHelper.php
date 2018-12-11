@@ -160,6 +160,7 @@ class ElasticHelper
      * @return array|null
      */
     public static function prepareTenderToElastic($tender, $cdb) {
+
         $id = $tender['item_id'];
         $stageId = $tender['stageId'];
         $msId = $tender['msId'];
@@ -195,6 +196,21 @@ class ElasticHelper
 
         //create data array and index doc
         if (!empty($ms) && !empty($stage)) {
+
+            if($tender['type'] == 'AC') {
+                $hasContract = false;
+                foreach($stage['compiledRelease']['contracts'] as $key=>$contract) {
+                    $status = $contract['status'] . '.' . $contract['statusDetails'];
+                    if($status == 'pending.contractProject' || $status == 'pending.contractPreparation') {
+                        continue;
+                    }
+                    $hasContract = true;
+                }
+                if(!$hasContract) {
+                    return null;
+                }
+            }
+
             $titlesOrDescriptions[$id] = $id;
 
             if (!empty($ms['compiledRelease']['tender']['title'])) {
@@ -598,7 +614,6 @@ class ElasticHelper
 
     public static function prepareContractPrzToElastic($contract, $cdb) {
         $response = $contract['response'];
-
         $data = json_decode($response, 1);
         $data = $data['data'];
         $id = $data['id'];
