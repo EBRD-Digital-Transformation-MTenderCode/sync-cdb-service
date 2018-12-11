@@ -304,7 +304,7 @@ class ElasticComponent
     public function indexContract($tender, $cdb) {
 
         $docArr = ElasticHelper::prepareTenderToElastic($tender, $cdb);
-        $this->indexDoc($docArr, $docArr['id']);
+        return $this->indexDoc($docArr, $docArr['id']);
 
     }
 
@@ -386,9 +386,13 @@ class ElasticComponent
      * Index doc
      * @param $docArr
      * @param $id
+     * @return bool
      */
     private function indexDoc($docArr, $id)
     {
+        if (!$docArr) {
+            return false;
+        }
         $delay = (int) Yii::$app->params['sleep_error_interval'];
         if (!$id) {
             Yii::error('Elastic error. Undefined id', 'sync-info');
