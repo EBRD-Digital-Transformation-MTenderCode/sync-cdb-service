@@ -197,16 +197,16 @@ class ElasticHelper
         //create data array and index doc
         if (!empty($ms) && !empty($stage)) {
 
-            if($tender['type'] == 'AC') {
+            if ($tender['type'] == 'AC') {
                 $hasContract = false;
-                foreach($stage['compiledRelease']['contracts'] as $key=>$contract) {
+                foreach($stage['compiledRelease']['contracts'] as $contract) {
                     $status = $contract['status'] . '.' . $contract['statusDetails'];
-                    if($status == 'pending.contractProject' || $status == 'pending.contractPreparation') {
+                    if ($status == 'pending.contractProject' || $status == 'pending.contractPreparation') {
                         continue;
                     }
                     $hasContract = true;
                 }
-                if(!$hasContract) {
+                if (!$hasContract) {
                     return null;
                 }
             }

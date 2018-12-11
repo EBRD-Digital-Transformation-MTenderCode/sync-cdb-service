@@ -142,9 +142,11 @@ class TendersUpdates
                                 self::handleContract($decodedItem, $cdu_id);
 
                                 if ($elastic_indexing) {
-                                    $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
+                                    $indexed = $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
+                                    if ($indexed !== false) {
+                                        $processedContracts++;
+                                    }
                                 }
-                                $processedContracts++;
                                 break;
 
                             default:

@@ -15,6 +15,9 @@
 
 #mapping
 ./yii mapping-elastic/all
+./yii mapping-elastic/contracts
+./yii mapping-elastic/tenders
+./yii mapping-elastic/plans
 
 # actions
 ./yii budgets/get-changed-list
