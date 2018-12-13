@@ -7,9 +7,10 @@ class ElasticHelper
 {
     const ROLE_BUYER = 'buyer';
 
-    const PROCEDURE_TYPE_MV = 'mv';
-    const PROCEDURE_TYPE_SV = 'sv';
-    const PROCEDURE_TYPE_OT = 'ot';
+    const PROCEDURE_TYPE_MV              = 'mv';
+    const PROCEDURE_TYPE_SV              = 'sv';
+    const PROCEDURE_TYPE_OT              = 'ot';
+    const PROCEDURE_TYPE_BELOW_THRESHOLD = 'belowThreshold';
 
     const PROCUREMENT_CATEGORY_GOODS    = 'goods';
     const PROCUREMENT_CATEGORY_SERVICES = 'services';
@@ -411,6 +412,11 @@ class ElasticHelper
         }
 
         $procedureType = $data['data']['procurementMethodType'] ?? '';
+
+        if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
+            $procedureType = self::PROCEDURE_TYPE_SV;
+        }
+
         $procedureStatus = $data['data']['status'] ?? '';
         $procedureStatus = self::TENDERS_PRZ_STATUSES[$procedureStatus] ?? '';
         $buyerRegion = $data['data']['procuringEntity']['address']['region'] ?? '';
