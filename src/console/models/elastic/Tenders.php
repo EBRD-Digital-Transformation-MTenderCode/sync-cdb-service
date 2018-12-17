@@ -50,8 +50,8 @@ class Tenders
                 foreach ($tenders as $tender) {
                     $cduV = $cdu[$tender['cdu_id']] ?? '';
                     if ($cduV != self::TYPE_PROZORRO) {
-                        $decodedItem = Tender::decode($tender);
-                        $elastic->indexTender($decodedItem, $cduV);
+                        $decodedItem = Tender::decode($tender, '');
+                        $elastic->indexTender($decodedItem[0] ?? false, $cduV);
                     } else {
                         $elastic->indexTenderPrz($tender, $cduV);
                     }

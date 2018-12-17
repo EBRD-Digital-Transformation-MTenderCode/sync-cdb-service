@@ -5,7 +5,7 @@ use Yii;
 use yii\db\Exception;
 use yii\helpers\ArrayHelper;
 use PDOException;
-use console\models\plans\Plan;
+use console\models\tenders\Tender;
 
 /**
  * Class Plans
@@ -24,12 +24,12 @@ class Plans
     }
 
     /**
-     * indexing of plans to elastic
+     * reindexing plans to elastic
      *
      * @throws \yii\web\ForbiddenHttpException
      * @throws \yii\web\HttpException
      */
-    public function indexItemsToElastic()
+    public function reindexItemsToElastic()
     {
         Yii::info("Indexing plans", 'console-msg');
         $limit = 25;
@@ -54,8 +54,8 @@ class Plans
                 foreach ($items as $item) {
                     $cduV = $cdu[$item['cdu_id']] ?? '';
                     if ($cduV != self::TYPE_PROZORRO) {
-                        $decodedItem = Plan::decode($item);
-                        $elastic->indexPlan($decodedItem, $cduV);
+                        $decodedItem = Tender::decode($item, Tender::MARK_PLAN);
+                        $elastic->indexPlan($decodedItem[0] ?? false, $cduV);
                     } else {
                         $elastic->indexPlanPrz($item, $cduV);
                     }
