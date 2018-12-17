@@ -94,10 +94,11 @@ class Tender
 
     /**
      * Returns tender with json decoded props and type
+     * @param string $type
      * @param array $item
      * @return array $decodedItem
      */
-    public static function decode($item)
+    public static function decode($item, $type = '')
     {
         $result = [];
 
@@ -106,22 +107,36 @@ class Tender
         $item['releasePackage'] = json_decode($item['release_package'], 1);
         $contractCounter = 0;
 
+        switch ($type) {
+            case self::MARK_PLAN:
+                $itemId = $item['plan_id'];
+                break;
+            case self::MARK_CONTRACT:
+                $itemId = $item['contract_id'];
+                break;
+            default:
+                $itemId = $item['tender_id'];
+                break;
+        }
+
         foreach ($responseArray['records'] as $record) {
-            $type = explode(self::DIVIDER, substr($record['ocid'], strlen($item['tender_id'])))[1] ?? null;
+            $itemType = explode(self::DIVIDER, substr($record['ocid'], strlen($itemId)))[1] ?? null;
 
-            if (in_array($type, self::MARKS)) {
-                $item['type'] = $type;
+            if (in_array($itemType, self::MARKS)) {
+                $item['type'] = $itemType;
                 $item['stageId'] = $record['ocid'];
-                $item['msId'] = $item['tender_id'];
+                $item['msId'] = $itemId;
 
-                if ($type == self::MARK_CONTRACT) {
-                    $item['item_id'] = $item['tender_id'] . self::DIVIDER . $contractCounter;
+                if ($itemType == self::MARK_CONTRACT) {
+                    $item['item_id'] = $itemId . self::DIVIDER . $contractCounter;
                     $contractCounter++;
                 } else {
-                    $item['item_id'] = $item['tender_id'];
+                    $item['item_id'] = $itemId;
                 }
 
-                $result[] = $item;
+                if (empty($type) || $type == $itemType) {
+                    $result[] = $item;
+                }
             }
         }
 

@@ -116,12 +116,19 @@ class TendersUpdates
                 try {
                     DB::beginTransaction();
 
-                    $decodedItems = Tender::decode($item);
+                    $decodedItems = Tender::decode($item, '');
+
+                    $savedToDBPlan = false;
+                    $savedToDBTender = false;
+                    $savedToDBContracts = false;
 
                     foreach ($decodedItems as $decodedItem) {
                         switch ($decodedItem['type']) {
                             case Tender::MARK_PLAN:
-                                self::handlePlan($decodedItem, $cdu_id);
+                                if (!$savedToDBPlan) {
+                                    self::handlePlan($decodedItem, $cdu_id);
+                                    $savedToDBPlan = true;
+                                }
 
                                 if ($elastic_indexing) {
                                     $elasticPlans->indexPlan($decodedItem, self::CDU_ALIAS);
@@ -130,7 +137,10 @@ class TendersUpdates
                                 break;
 
                             case Tender::MARK_TENDER:
-                                self::handleTender($decodedItem, $cdu_id);
+                                if (!$savedToDBTender) {
+                                    self::handleTender($decodedItem, $cdu_id);
+                                    $savedToDBTender = true;
+                                }
 
                                 if ($elastic_indexing) {
                                     $elasticTenders->indexTender($decodedItem, self::CDU_ALIAS);
@@ -139,7 +149,10 @@ class TendersUpdates
                                 break;
 
                             case Tender::MARK_CONTRACT:
-                                self::handleContract($decodedItem, $cdu_id);
+                                if (!$savedToDBContracts) {
+                                    self::handleContract($decodedItem, $cdu_id);
+                                    $savedToDBContracts = true;
+                                }
 
                                 if ($elastic_indexing) {
                                     $indexed = $elasticContracts->indexContract($decodedItem, self::CDU_ALIAS);
