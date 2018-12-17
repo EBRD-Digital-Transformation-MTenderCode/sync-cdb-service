@@ -1,14 +1,14 @@
 <?php
 namespace console\controllers;
 
+use Yii;
+use yii\web\HttpException;
+use yii\console\Controller;
 use console\models\elastic\Budgets;
 use console\models\elastic\Contracts;
 use console\models\elastic\ElasticComponent;
 use console\models\elastic\Plans;
 use console\models\elastic\Tenders;
-use Yii;
-use yii\web\HttpException;
-use yii\console\Controller;
 
 /**
  * Class ReindexElasticController
@@ -17,99 +17,83 @@ use yii\console\Controller;
 class ReindexElasticController extends Controller
 {
     /**
-     * reindex all indexes
+     * Reindex all indexes
      */
     public function actionAll()
     {
         $this->reindexBudgets();
 
+        $this->reindexPlans();
+
         $this->reindexTenders();
 
-        $this->indexPlans();
-
-        $this->indexContracts();
+        $this->reindexContracts();
 
         Yii::info("Elastic indexing is complete", 'console-msg');
     }
 
     /**
-     * reindex budgets
+     * Reindex budgets
      */
     public function actionBudgets()
     {
-        Yii::info("This action is temporarly disabled", 'console-msg');
-
-        /*
         try {
             $this->reindexBudgets();
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-        */
 
         Yii::info("Elastic indexing Budgets is complete", 'console-msg');
     }
 
     /**
-     *  reindex tenders
+     * Reindex plans
+     */
+    public function actionPlans()
+    {
+        try {
+            $this->reindexPlans();
+        } catch (HttpException $e) {
+            Yii::error($e->getMessage(), 'console-msg');
+            exit(0);
+        }
+
+        Yii::info("Elastic indexing Plans is complete", 'console-msg');
+    }
+
+    /**
+     * Reindex tenders
      */
     public function actionTenders()
     {
-        Yii::info("This action is temporarly disabled", 'console-msg');
-
-        /*
         try {
             $this->reindexTenders();
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-        */
 
         Yii::info("Elastic indexing Tenders is complete", 'console-msg');
     }
 
     /**
-     *  reindex plans
-     */
-    public function actionPlans()
-    {
-        Yii::info("This action is temporarly disabled", 'console-msg');
-
-        /*
-        try {
-            $this->indexPlans();
-        } catch (HttpException $e) {
-            Yii::error($e->getMessage(), 'console-msg');
-            exit(0);
-        }
-        */
-
-        Yii::info("Elastic indexing Plans is complete", 'console-msg');
-    }
-
-    /**
-     *  reindex Contracts
+     * Reindex contracts
      */
     public function actionContracts()
     {
-        Yii::info("This action is temporarly disabled", 'console-msg');
-
-        /*
         try {
-            $this->indexContracts();
+            $this->reindexContracts();
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-        */
 
         Yii::info("Elastic indexing Contracts is complete", 'console-msg');
     }
 
     /**
-     *
+     * Reindex budgets
      */
     private function reindexBudgets()
     {
@@ -148,6 +132,47 @@ class ReindexElasticController extends Controller
         }
     }
 
+    /**
+     * Reindex plans
+     */
+    private function reindexPlans()
+    {
+        $elastic_url = Yii::$app->params['elastic_url'];
+        $elastic_index = Yii::$app->params['elastic_plans_index'];
+        $elastic_type = Yii::$app->params['elastic_plans_type'];
+
+        try {
+            $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
+            $result = $elastic->dropIndex();
+
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 404) {
+                Yii::error("Elastic index " . $elastic_index . " error. Code: " . $result['code'], 'console-msg');
+                exit(0);
+            }
+
+            $result = $elastic->setIndexSettings();
+            if ((int)$result['code'] != 200) {
+                Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+                exit(0);
+            }
+
+            $result = $elastic->plansMapping();
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
+                Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
+                exit(0);
+            }
+            $plans = new Plans();
+            $plans->reindexItemsToElastic();
+
+        } catch (HttpException $e) {
+            Yii::error($e->getMessage(), 'console-msg');
+            exit(0);
+        }
+    }
+
+    /**
+     * Reindex tenders
+     */
     private function reindexTenders()
     {
         $elastic_url = Yii::$app->params['elastic_url'];
@@ -187,47 +212,9 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * PLANS
+     * Reindex contracts
      */
-    private function indexPlans()
-    {
-        $elastic_url = Yii::$app->params['elastic_url'];
-        $elastic_index = Yii::$app->params['elastic_plans_index'];
-        $elastic_type = Yii::$app->params['elastic_plans_type'];
-
-        try {
-            $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
-            $result = $elastic->dropIndex();
-
-            if ((int)$result['code'] != 200 && (int)$result['code'] != 404) {
-                Yii::error("Elastic index " . $elastic_index . " error. Code: " . $result['code'], 'console-msg');
-                exit(0);
-            }
-
-            $result = $elastic->setIndexSettings();
-            if ((int)$result['code'] != 200) {
-                Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
-                exit(0);
-            }
-
-            $result = $elastic->plansMapping();
-            if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
-                Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
-                exit(0);
-            }
-            $plans = new Plans();
-            $plans->indexItemsToElastic();
-
-        } catch (HttpException $e) {
-            Yii::error($e->getMessage(), 'console-msg');
-            exit(0);
-        }
-    }
-
-    /**
-     * Contracts
-     */
-    private function indexContracts()
+    private function reindexContracts()
     {
         $elastic_url = Yii::$app->params['elastic_url'];
         $elastic_index = Yii::$app->params['elastic_contracts_index'];
@@ -254,12 +241,11 @@ class ReindexElasticController extends Controller
                 exit(0);
             }
             $contracts = new Contracts();
-            $contracts->indexItemsToElastic();
+            $contracts->reindexItemsToElastic();
 
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
     }
-
 }
