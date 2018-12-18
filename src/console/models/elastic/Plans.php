@@ -73,4 +73,17 @@ class Plans
             usleep(300000);
         }
     }
+
+    /**
+     * add one item to index queue
+     * @param $id
+     * @return int
+     * @throws Exception
+     */
+    public function reindexOne($id)
+    {
+        $query = "INSERT INTO plans_prz_changed_list (plan_id) VALUES (:id) ON CONFLICT (plan_id) DO NOTHING";
+
+        return self::getDb()->createCommand($query, [':id' => $id])->execute();
+    }
 }
