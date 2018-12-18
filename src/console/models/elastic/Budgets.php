@@ -61,4 +61,17 @@ class Budgets
         }
         return true;
     }
+
+    /**
+     * add one item to index queue
+     * @param $id
+     * @return int
+     * @throws Exception
+     */
+    public function reindexOne($id)
+    {
+        $query = "INSERT INTO budgets_changed_list (ocid) VALUES (:id) ON CONFLICT (ocid) DO NOTHING";
+
+        return self::getDb()->createCommand($query, [':id' => $id])->execute();
+    }
 }

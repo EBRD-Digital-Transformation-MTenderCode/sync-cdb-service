@@ -42,13 +42,17 @@
 
 ./yii cpv/import
 
-
 # команды для Elastic
 ./yii reindex-elastic/all
 ./yii reindex-elastic/budgets
 ./yii reindex-elastic/tenders
 ./yii reindex-elastic/plans
 ./yii reindex-elastic/contracts
+./yii reindex-elastic/add-budget %id%
+./yii reindex-elastic/add-tender %id%
+./yii reindex-elastic/add-plan-prz %id%
+./yii reindex-elastic/add-tender-prz %id%
+./yii reindex-elastic/add-contract-prz %id%
 
 ./yii mapping-elastic/all
 ./yii mapping-elastic/budgets

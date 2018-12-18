@@ -69,4 +69,30 @@ class Tenders
             usleep(300000);
         }
     }
+
+    /**
+     * add one item to index queue
+     * @param $id
+     * @return int
+     * @throws Exception
+     */
+    public function reindexOne($id)
+    {
+        $query = "INSERT INTO tenders_changed_list (tender_id) VALUES (:id) ON CONFLICT (tender_id) DO NOTHING";
+
+        return self::getDb()->createCommand($query, [':id' => $id])->execute();
+    }
+
+    /**
+     * add one prozorro item to index queue
+     * @param $id
+     * @return int
+     * @throws Exception
+     */
+    public function reindexOnePrz($id)
+    {
+        $query = "INSERT INTO tenders_prz_changed_list (tender_id) VALUES (:id) ON CONFLICT (tender_id) DO NOTHING";
+
+        return self::getDb()->createCommand($query, [':id' => $id])->execute();
+    }
 }
