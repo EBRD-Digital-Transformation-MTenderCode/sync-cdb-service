@@ -75,4 +75,17 @@ class Contracts
             usleep(300000);
         }
     }
+
+    /**
+     * add one item to index queue
+     * @param $id
+     * @return int
+     * @throws Exception
+     */
+    public function reindexOne($id)
+    {
+        $query = "INSERT INTO contracts_prz_changed_list (contract_id) VALUES (:id) ON CONFLICT (contract_id) DO NOTHING";
+
+        return self::getDb()->createCommand($query, [':id' => $id])->execute();
+    }
 }

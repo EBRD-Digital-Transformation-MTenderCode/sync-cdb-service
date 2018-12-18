@@ -4,11 +4,11 @@ namespace console\controllers;
 use Yii;
 use yii\web\HttpException;
 use yii\console\Controller;
+use console\models\elastic\Plans;
 use console\models\elastic\Budgets;
+use console\models\elastic\Tenders;
 use console\models\elastic\Contracts;
 use console\models\elastic\ElasticComponent;
-use console\models\elastic\Plans;
-use console\models\elastic\Tenders;
 
 /**
  * Class ReindexElasticController
@@ -17,7 +17,7 @@ use console\models\elastic\Tenders;
 class ReindexElasticController extends Controller
 {
     /**
-     * Reindex all indexes
+     * reindex all indexes
      */
     public function actionAll()
     {
@@ -33,7 +33,7 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex budgets
+     * reindex budgets
      */
     public function actionBudgets()
     {
@@ -48,7 +48,7 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex plans
+     * reindex plans
      */
     public function actionPlans()
     {
@@ -63,7 +63,7 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex tenders
+     * reindex tenders
      */
     public function actionTenders()
     {
@@ -78,7 +78,7 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex contracts
+     * reindex contracts
      */
     public function actionContracts()
     {
@@ -93,7 +93,97 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex budgets
+     * reindex one budget
+     * @param string $id
+     * @throws \yii\db\Exception
+     */
+    public function actionAddBudget($id = '')
+    {
+        if (strlen($id) != 28) {
+            Yii::error('Budget id must be 28 chars', 'sync-info');
+            exit(0);
+        }
+
+        $budgets = new Budgets();
+        $budgets->reindexOne($id);
+
+        Yii::info("Budget {$id} added to queue for reindex", 'console-msg');
+    }
+
+    /**
+     * reindex one tender
+     * @param string $id
+     * @throws \yii\db\Exception
+     */
+    public function actionAddTender($id = '')
+    {
+        if (strlen($id) != 28) {
+            Yii::error('Tender id must be 28 chars', 'sync-info');
+            exit(0);
+        }
+
+        $tenders = new Tenders();
+        $tenders->reindexOne($id);
+
+        Yii::info("Tender {$id} added to queue for reindex", 'console-msg');
+    }
+
+    /**
+     * reindex one prozorro plan
+     * @param string $id
+     * @throws \yii\db\Exception
+     */
+    public function actionAddPlanPrz($id = '')
+    {
+        if (strlen($id) != 32) {
+            Yii::error('Plan id must be 32 chars', 'sync-info');
+            exit(0);
+        }
+
+        $plans = new Plans();
+        $plans->reindexOne($id);
+
+        Yii::info("Plan {$id} added to queue for reindex", 'console-msg');
+    }
+
+    /**
+     * reindex one prozorro tender
+     * @param string $id
+     * @throws \yii\db\Exception
+     */
+    public function actionAddTenderPrz($id = '')
+    {
+        if (strlen($id) != 32) {
+            Yii::error('Tender id must be 32 chars', 'sync-info');
+            exit(0);
+        }
+
+        $tenders = new Tenders();
+        $tenders->reindexOnePrz($id);
+
+        Yii::info("Tender {$id} added to queue for reindex", 'console-msg');
+    }
+
+    /**
+     * reindex one prozorro contract
+     * @param string $id
+     * @throws \yii\db\Exception
+     */
+    public function actionAddContractPrz($id = '')
+    {
+        if (strlen($id) != 32) {
+            Yii::error('Contract id must be 32 chars', 'sync-info');
+            exit(0);
+        }
+
+        $contracts = new Contracts();
+        $contracts->reindexOne($id);
+
+        Yii::info("Contract {$id} added to queue for reindex", 'console-msg');
+    }
+
+    /**
+     * reindex budgets
      */
     private function reindexBudgets()
     {
@@ -133,7 +223,7 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex plans
+     * reindex plans
      */
     private function reindexPlans()
     {
@@ -171,7 +261,7 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex tenders
+     * reindex tenders
      */
     private function reindexTenders()
     {
@@ -212,7 +302,7 @@ class ReindexElasticController extends Controller
     }
 
     /**
-     * Reindex contracts
+     * reindex contracts
      */
     private function reindexContracts()
     {
