@@ -16,8 +16,17 @@ use console\models\elastic\ElasticComponent;
  */
 class ReindexElasticController extends Controller
 {
+    public $soft;
+    public $hard;
+
+    public function options($actionID)
+    {
+        return ['soft', 'hard'];
+    }
+
     /**
      * reindex all indexes
+     * @throws \yii\db\Exception
      */
     public function actionAll()
     {
@@ -28,12 +37,11 @@ class ReindexElasticController extends Controller
         $this->reindexTenders();
 
         $this->reindexContracts();
-
-        Yii::info("Elastic indexing is complete", 'console-msg');
     }
 
     /**
      * reindex budgets
+     * @throws \yii\db\Exception
      */
     public function actionBudgets()
     {
@@ -43,12 +51,11 @@ class ReindexElasticController extends Controller
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-
-        Yii::info("Elastic indexing Budgets is complete", 'console-msg');
     }
 
     /**
      * reindex plans
+     * @throws \yii\db\Exception
      */
     public function actionPlans()
     {
@@ -58,12 +65,11 @@ class ReindexElasticController extends Controller
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-
-        Yii::info("Elastic indexing Plans is complete", 'console-msg');
     }
 
     /**
      * reindex tenders
+     * @throws \yii\db\Exception
      */
     public function actionTenders()
     {
@@ -73,12 +79,11 @@ class ReindexElasticController extends Controller
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-
-        Yii::info("Elastic indexing Tenders is complete", 'console-msg');
     }
 
     /**
      * reindex contracts
+     * @throws \yii\db\Exception
      */
     public function actionContracts()
     {
@@ -88,8 +93,6 @@ class ReindexElasticController extends Controller
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-
-        Yii::info("Elastic indexing Contracts is complete", 'console-msg');
     }
 
     /**
@@ -184,6 +187,7 @@ class ReindexElasticController extends Controller
 
     /**
      * reindex budgets
+     * @throws \yii\db\Exception
      */
     private function reindexBudgets()
     {
@@ -215,7 +219,14 @@ class ReindexElasticController extends Controller
             }
 
             $budgets = new Budgets();
-            $budgets->reindexItemsToElastic();
+
+            if ($this->hard) {
+                $budgets->truncate();
+                Yii::info('All budgets has been deleted from DB', 'console-msg');
+            } else {
+                $budgets->reindexItemsToElastic();
+                Yii::info("Elastic indexing Budgets is complete", 'console-msg');
+            }
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
@@ -224,6 +235,7 @@ class ReindexElasticController extends Controller
 
     /**
      * reindex plans
+     * @throws \yii\db\Exception
      */
     private function reindexPlans()
     {
@@ -251,9 +263,16 @@ class ReindexElasticController extends Controller
                 Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
                 exit(0);
             }
-            $plans = new Plans();
-            $plans->reindexItemsToElastic();
 
+            $plans = new Plans();
+
+            if ($this->hard) {
+                $plans->truncate();
+                Yii::info('All plans has been deleted from DB', 'console-msg');
+            } else {
+                $plans->reindexItemsToElastic();
+                Yii::info("Elastic indexing Plans is complete", 'console-msg');
+            }
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
@@ -262,6 +281,7 @@ class ReindexElasticController extends Controller
 
     /**
      * reindex tenders
+     * @throws \yii\db\Exception
      */
     private function reindexTenders()
     {
@@ -293,8 +313,14 @@ class ReindexElasticController extends Controller
             }
 
             $tenders = new Tenders();
-            $tenders->reindexItemsToElastic();
 
+            if ($this->hard) {
+                $tenders->truncate();
+                Yii::info('All tenders has been deleted from DB', 'console-msg');
+            } else {
+                $tenders->reindexItemsToElastic();
+                Yii::info("Elastic indexing Tenders is complete", 'console-msg');
+            }
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
@@ -303,6 +329,7 @@ class ReindexElasticController extends Controller
 
     /**
      * reindex contracts
+     * @throws \yii\db\Exception
      */
     private function reindexContracts()
     {
@@ -330,9 +357,16 @@ class ReindexElasticController extends Controller
                 Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
                 exit(0);
             }
-            $contracts = new Contracts();
-            $contracts->reindexItemsToElastic();
 
+            $contracts = new Contracts();
+
+            if ($this->hard) {
+                $contracts->truncate();
+                Yii::info('All contracts has been deleted from DB', 'console-msg');
+            } else {
+                $contracts->reindexItemsToElastic();
+                Yii::info("Elastic indexing Contracts is complete", 'console-msg');
+            }
         } catch (HttpException $e) {
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
