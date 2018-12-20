@@ -5,7 +5,6 @@ use Yii;
 use yii\db\Exception;
 use PDOException;
 
-
 /**
  * Class Budgets
  * @package console\models\elastic
@@ -73,5 +72,17 @@ class Budgets
         $query = "INSERT INTO budgets_changed_list (ocid) VALUES (:id) ON CONFLICT (ocid) DO NOTHING";
 
         return self::getDb()->createCommand($query, [':id' => $id])->execute();
+    }
+
+    /**
+     * clear items from DB
+     * @throws Exception
+     */
+    public function truncate()
+    {
+        self::getDb()->createCommand('TRUNCATE budgets')->execute();
+        self::getDb()->createCommand('TRUNCATE budgets_changed_list')->execute();
+        self::getDb()->createCommand('TRUNCATE budgets_updates')->execute();
+        self::getDb()->createCommand('UPDATE last_update_time SET updated_at = NULL, offset_time = NULL')->execute();
     }
 }

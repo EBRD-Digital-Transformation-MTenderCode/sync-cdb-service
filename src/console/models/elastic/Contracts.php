@@ -88,4 +88,16 @@ class Contracts
 
         return self::getDb()->createCommand($query, [':id' => $id])->execute();
     }
+
+    /**
+     * clear items from DB
+     * @throws Exception
+     */
+    public function truncate()
+    {
+        self::getDb()->createCommand('TRUNCATE contracts')->execute();
+        self::getDb()->createCommand('TRUNCATE contracts_prz_changed_list')->execute();
+        self::getDb()->createCommand('TRUNCATE contracts_prz_updates')->execute();
+        self::getDb()->createCommand('UPDATE last_update_time SET updated_at = NULL, offset_time = NULL')->execute();
+    }
 }
