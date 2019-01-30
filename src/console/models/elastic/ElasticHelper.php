@@ -11,7 +11,6 @@ class ElasticHelper
     const PROCEDURE_TYPE_SV              = 'sv';
     const PROCEDURE_TYPE_OT              = 'ot';
     const PROCEDURE_TYPE_BELOW_THRESHOLD = 'belowThreshold';
-    const PROCEDURE_TYPE_REPORTING       = 'reporting';
 
     const PROCUREMENT_CATEGORY_GOODS    = 'goods';
     const PROCUREMENT_CATEGORY_SERVICES = 'services';
@@ -416,10 +415,6 @@ class ElasticHelper
 
         if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
             $procedureType = self::PROCEDURE_TYPE_SV;
-        }
-
-        if ($procedureType == self::PROCEDURE_TYPE_REPORTING) {
-            $procedureType = self::PROCEDURE_TYPE_MV;
         }
 
         $procedureStatus = $data['data']['status'] ?? '';
