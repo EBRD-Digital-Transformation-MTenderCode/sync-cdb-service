@@ -11,6 +11,9 @@ class ElasticHelper
     const PROCEDURE_TYPE_SV              = 'sv';
     const PROCEDURE_TYPE_OT              = 'ot';
     const PROCEDURE_TYPE_BELOW_THRESHOLD = 'belowThreshold';
+    const PROCEDURE_TYPE_PRICE_PROPOSALS = 'priceProposals';
+    const PROCEDURE_TYPE_ABOVE_THRESHOLD = 'aboveThreshold';
+
 
     const PROCUREMENT_CATEGORY_GOODS    = 'goods';
     const PROCUREMENT_CATEGORY_SERVICES = 'services';
@@ -530,6 +533,15 @@ class ElasticHelper
         $entityId = $data['planID'];
         $modifiedDate = $data['dateModified'] ?? null;
         $procedureType = $data['tender']['procurementMethodType'] ?? '';
+
+        if ($procedureType == self::PROCEDURE_TYPE_PRICE_PROPOSALS) {
+            $procedureType = self::PROCEDURE_TYPE_SV;
+        }
+
+        if ($procedureType == self::PROCEDURE_TYPE_ABOVE_THRESHOLD) {
+            $procedureType = self::PROCEDURE_TYPE_OT;
+        }
+
         $amount = $data['budget']['amount'] ?? 0;
         $classifications[] = $data['classification']['id'] ?? '';
         $titlesOrDescriptions = [];
