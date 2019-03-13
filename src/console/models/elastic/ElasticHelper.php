@@ -534,6 +534,10 @@ class ElasticHelper
         $modifiedDate = $data['dateModified'] ?? null;
         $procedureType = $data['tender']['procurementMethodType'] ?? '';
 
+        if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
+            $procedureType = self::PROCEDURE_TYPE_MV;
+        }
+
         if ($procedureType == self::PROCEDURE_TYPE_PRICE_PROPOSALS) {
             $procedureType = self::PROCEDURE_TYPE_SV;
         }
