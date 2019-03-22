@@ -352,7 +352,6 @@ class ElasticHelper
                 'titlesOrDescriptionsStrict'=> array_values($titlesOrDescriptions),
                 'buyerRegion'               => $buyerRegion,
                 'deliveriesRegions'         => array_values($deliveriesRegions),
-                'procedureOwnership'        => $procedureOwnership,
                 'procedureType'             => $procedureType,
                 'procedureStatus'           => $procedureStatus,
                 'amount'                    => $amount,
@@ -376,6 +375,10 @@ class ElasticHelper
                 'buyerMainSectoralActivity' => $buyerMainSectoralActivity,
                 'tags'                      => array_values($tags),
             ];
+
+            if ($tender['type'] == 'EV') {
+                $docArr['procedureOwnership'] = $procedureOwnership;
+            }
         }
 
         return $docArr ?? null;
