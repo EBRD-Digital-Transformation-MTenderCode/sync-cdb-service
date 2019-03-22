@@ -94,6 +94,7 @@ class ElasticHelper
                 'procedureOwnership' => ['type' => 'keyword'],
                 'procedureType' => ['type' => 'keyword'],
                 'procedureStatus' => ['type' => 'keyword'],
+                'pin' => ['type' => 'keyword'],
                 'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
                 'currency' => ['type' => 'keyword'],
                 'classifications' => ['type' => 'keyword'],
@@ -353,7 +354,6 @@ class ElasticHelper
                 'buyerRegion'               => $buyerRegion,
                 'deliveriesRegions'         => array_values($deliveriesRegions),
                 'procedureType'             => $procedureType,
-                'procedureStatus'           => $procedureStatus,
                 'amount'                    => $amount,
                 'currency'                  => $currency,
                 'classifications'           => array_values($classifications),
@@ -375,6 +375,16 @@ class ElasticHelper
                 'buyerMainSectoralActivity' => $buyerMainSectoralActivity,
                 'tags'                      => array_values($tags),
             ];
+
+            if ($tender['type'] != 'PN') {
+                $docArr['procedureStatus'] = $procedureStatus;
+            } else {
+                if (floor((strtotime($stage['compiledRelease']['tender']['tenderPeriod']['startDate']) - strtotime($stage['compiledRelease']['date']))/3600/24) >= 15) {
+                    $docArr['pin'] = 'true';
+                } else {
+                    $docArr['pin'] = 'false';
+                }
+            }
 
             if ($tender['type'] == 'EV') {
                 $docArr['procedureOwnership'] = $procedureOwnership;
@@ -642,6 +652,7 @@ class ElasticHelper
             'buyerName'                  => $buyerName,
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
+            'pin'                        => 'false',
         ];
 
         return $docArr;
