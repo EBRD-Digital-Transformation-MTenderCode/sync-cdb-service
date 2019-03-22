@@ -670,6 +670,7 @@ class ElasticHelper
         $entityId = $data['contractID'];
         $modifiedDate = $data['dateModified'] ?? null;
         $procedureType = $data['documents']['procurementMethodType'] ?? '';
+        $procedureStatus = $data['status'];
         $amount = $data['value']['amount'] ?? 0;
         $titlesOrDescriptions = [];
         $title = '';
@@ -742,6 +743,7 @@ class ElasticHelper
             'id'                         => $id,
             'entityId'                   => $entityId,
             'procedureType'              => $procedureType,
+            'procedureStatus'            => $procedureStatus,
             'amount'                     => $amount,
             'title'                      => $title,
             'description'                => $description,
