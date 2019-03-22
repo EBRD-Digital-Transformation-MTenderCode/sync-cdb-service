@@ -13,7 +13,8 @@ class ElasticHelper
     const PROCEDURE_TYPE_BELOW_THRESHOLD = 'belowThreshold';
     const PROCEDURE_TYPE_PRICE_PROPOSALS = 'priceProposals';
     const PROCEDURE_TYPE_ABOVE_THRESHOLD = 'aboveThreshold';
-
+    const PROCEDURE_OWNERSHIP_GOVERMENT  = 'government';
+    const PROCEDURE_OWNERSHIP_COMMERCIAL = 'commercial';
 
     const PROCUREMENT_CATEGORY_GOODS    = 'goods';
     const PROCUREMENT_CATEGORY_SERVICES = 'services';
@@ -90,6 +91,7 @@ class ElasticHelper
                 'titlesOrDescriptionsStrict' => ['type' => 'text'],
                 'buyerRegion' => ['type' => 'keyword'],
                 'deliveriesRegions' => ['type' => 'keyword'],
+                'procedureOwnership' => ['type' => 'keyword'],
                 'procedureType' => ['type' => 'keyword'],
                 'procedureStatus' => ['type' => 'keyword'],
                 'amount' => ['type' => 'scaled_float', 'scaling_factor' => 100],
@@ -230,6 +232,7 @@ class ElasticHelper
             $mainProcurementCategory = $ms['compiledRelease']['tender']['mainProcurementCategory'] ?? '';
             $amount = $ms['compiledRelease']['tender']['value']['amount'] ?? 0;
 
+            $procedureOwnership = self::PROCEDURE_OWNERSHIP_GOVERMENT;
             $procedureType = self::PROCEDURE_TYPE_OT;
 
             switch ($mainProcurementCategory) {
@@ -349,6 +352,7 @@ class ElasticHelper
                 'titlesOrDescriptionsStrict'=> array_values($titlesOrDescriptions),
                 'buyerRegion'               => $buyerRegion,
                 'deliveriesRegions'         => array_values($deliveriesRegions),
+                'procedureOwnership'        => $procedureOwnership,
                 'procedureType'             => $procedureType,
                 'procedureStatus'           => $procedureStatus,
                 'amount'                    => $amount,
@@ -412,6 +416,11 @@ class ElasticHelper
         if (!empty($data['data']['tenderID'])) {
             $entityId = $data['data']['tenderID'];
             $titlesOrDescriptions[$entityId] = $entityId;
+        }
+
+        $procedureOwnership = self::PROCEDURE_OWNERSHIP_GOVERMENT;
+        if ($data['data']['procuringEntity']['kind'] == 'other') {
+            $procedureOwnership  = self::PROCEDURE_OWNERSHIP_COMMERCIAL;
         }
 
         $procedureType = $data['data']['procurementMethodType'] ?? '';
@@ -493,6 +502,7 @@ class ElasticHelper
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
             'buyerRegion'                => $buyerRegion,
+            'procedureOwnership'         => $procedureOwnership,
             'procedureType'              => $procedureType,
             'procedureStatus'            => $procedureStatus,
             'amount'                     => $amount,
