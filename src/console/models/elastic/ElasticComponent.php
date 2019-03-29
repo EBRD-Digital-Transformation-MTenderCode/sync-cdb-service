@@ -220,6 +220,8 @@ class ElasticComponent
 
                 $classifications[] = $data['tender']['classification']['id'] ?? '';
 
+                $titlesOrDescriptions[$id] = $id;
+
                 if (!empty($data['tender']['title'])) {
                     $title = $data['tender']['title'];
                     $titlesOrDescriptions[$title] = $title;
