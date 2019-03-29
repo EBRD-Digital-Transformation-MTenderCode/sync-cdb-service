@@ -90,6 +90,7 @@ class ElasticComponent
             '_all' => ['enabled' => false],
             'properties' => [
                 'id' => ['type' => 'keyword'],
+                'entityId' => ['type' => 'keyword'],
                 'title' => ['type' => 'text'],
                 'description' => ['type' => 'text'],
                 'titlesOrDescriptions' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
@@ -252,6 +253,7 @@ class ElasticComponent
 
         $docArr = [
             'id'                         => $id,
+            'entityId'                   => $id,
             'title'                      => $title,
             'description'                => $description,
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
@@ -300,6 +302,7 @@ class ElasticComponent
      * Index ocds contract
      * @param $tender
      * @param $cdb
+     * @return bool
      */
     public function indexContract($tender, $cdb) {
 
