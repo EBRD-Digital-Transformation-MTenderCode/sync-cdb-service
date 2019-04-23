@@ -104,7 +104,7 @@ class ElasticComponent
                 'periodPlanningTo' => ['type' => 'date'],
                 'modifiedDate' => ['type' => 'date'],
                 'buyerName' => ['type' => 'text'],
-                'buyersNames' => ['type' => 'text'],
+                'buyersNames' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
                 'buyerIdentifier' => ['type' => 'keyword'],
                 'buyerType' => ['type' => 'keyword'],
                 'buyerMainGeneralActivity' => ['type' => 'keyword'],
