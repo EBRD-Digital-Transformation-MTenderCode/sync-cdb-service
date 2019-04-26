@@ -671,6 +671,7 @@ class ElasticHelper
         $modifiedDate = $data['dateModified'] ?? null;
         $procedureType = $data['documents']['procurementMethodType'] ?? '';
         $procedureStatus = $data['status'];
+        $buyerRegion = $data['procuringEntity']['address']['region'] ?? '';
         $amount = $data['value']['amount'] ?? 0;
         $titlesOrDescriptions = [];
         $title = '';
@@ -749,6 +750,7 @@ class ElasticHelper
             'description'                => $description,
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
+            'buyerRegion'                => $buyerRegion,
             'classifications'            => $classifications,
             'modifiedDate'               => $modifiedDate,
             'periodEnquiryFrom'          => $periodContractStartDate,
