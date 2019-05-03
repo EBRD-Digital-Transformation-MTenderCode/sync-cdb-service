@@ -678,6 +678,7 @@ class ElasticHelper
         $description = '';
         $buyerName = '';
         $buyersNames = [];
+        $deliveriesRegions = [];
 
         $titlesOrDescriptions[$entityId] = $entityId;
 
@@ -694,19 +695,23 @@ class ElasticHelper
         if (!empty($data['classification']['title'])) {
             $titlesOrDescriptions[$data['classification']['title']] = $data['classification']['title'];
         }
+
         if (!empty($data['classification']['description'])) {
             $titlesOrDescriptions[$data['classification']['description']] = $data['classification']['description'];
         }
+
         if (isset($data['lots']) && is_array($data['lots'])) {
             foreach ($data['lots'] as $item) {
                 if (!empty(($item['title']))) {
                     $titlesOrDescriptions[$item['title']] = $item['title'];
                 }
+
                 if (!empty($item['description'])) {
                     $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
             }
         }
+
         if (isset($data['items']) && is_array($data['items'])) {
             foreach ($data['items'] as $item) {
                 if (!empty($item['description'])) {
@@ -719,6 +724,10 @@ class ElasticHelper
 
                 if (!empty($item['deliveryDate']['endDate'])) {
                     $periodDeliveryTo[$item['deliveryDate']['endDate']] = $item['deliveryDate']['endDate'];
+                }
+
+                if (!empty($item['deliveryAddress']['region'])) {
+                    $deliveriesRegions[$item['deliveryAddress']['region']] = $item['deliveryAddress']['region'];
                 }
 
                 $classifications[] = $item['classification']['id'] ?? '';
@@ -759,6 +768,7 @@ class ElasticHelper
             'buyerName'                  => $buyerName,
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
+            'deliveriesRegions'          => array_values($deliveriesRegions),
         ];
 
         return $docArr;
