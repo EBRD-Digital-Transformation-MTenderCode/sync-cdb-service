@@ -439,7 +439,7 @@ class ElasticHelper
         $procedureType = $data['data']['procurementMethodType'] ?? '';
 
         if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
-            $procedureType = self::PROCEDURE_TYPE_SV;
+            $procedureType = self::PROCEDURE_TYPE_MV;
         }
 
         $procedureStatus = $data['data']['status'] ?? '';
@@ -658,10 +658,7 @@ class ElasticHelper
         return $docArr;
     }
 
-    public static function prepareContractPrzToElastic($contract, $cdb) {
-        $response = $contract['response'];
-        $data = json_decode($response, 1);
-        $data = $data['data'];
+    public static function prepareContractPrzToElastic($data, $cdb) {
         $id = $data['id'];
         $periodDeliveryFrom = [];
         $periodDeliveryTo = [];
@@ -669,7 +666,13 @@ class ElasticHelper
 
         $entityId = $data['contractID'];
         $modifiedDate = $data['dateModified'] ?? null;
-        $procedureType = $data['documents']['procurementMethodType'] ?? '';
+
+        $procedureType = $data['procurementMethodType'] ?? '';
+
+        if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
+            $procedureType = self::PROCEDURE_TYPE_MV;
+        }
+
         $procedureStatus = $data['status'];
         $buyerRegion = $data['procuringEntity']['address']['region'] ?? '';
         $amount = $data['value']['amount'] ?? 0;
