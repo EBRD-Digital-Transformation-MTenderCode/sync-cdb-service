@@ -83,7 +83,7 @@ class Tender
      * @return mixed
      * @throws HttpException
      */
-    private static function getTenderFromCdb($tender_id) {
+    public static function getTenderFromCdb($tender_id) {
         $url = Yii::$app->params['tenders_prz_url'] . "/" . $tender_id;
         $result = Curl::sendRequest($url, "GET");
 

@@ -315,11 +315,11 @@ class ElasticComponent
 
     /**
      * Index prozorro contract
-     * @param $contract
+     * @param $data
      * @param $cdb
      */
-    public function indexContractPrz($contract, $cdb) {
-        $docArr = ElasticHelper::prepareContractPrzToElastic($contract, $cdb);
+    public function indexContractPrz($data, $cdb) {
+        $docArr = ElasticHelper::prepareContractPrzToElastic($data, $cdb);
         $this->indexDoc($docArr, $docArr['id']);
     }
 

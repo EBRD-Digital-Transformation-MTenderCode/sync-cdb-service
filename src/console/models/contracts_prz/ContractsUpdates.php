@@ -4,6 +4,7 @@ namespace console\models\contracts_prz;
 use Yii;
 use yii\web\HttpException;
 use console\models\elastic\ElasticComponent;
+use console\models\tenders_prz\Tender;
 use PDOException;
 
 /**
@@ -86,7 +87,12 @@ class ContractsUpdates
                     self::handleDb($item, $cdu_id);
 
                     if ($elastic_indexing) {
-                        $elastic->indexContractPrz($item, self::CDU_ALIAS);
+                        $contractdata = json_decode($item['response'], 1);
+                        // get procurementMethodType from tender
+                        $tender = Tender::getTenderFromCdb($contractdata['data']['tender_id']);
+                        $tenderData = json_decode($tender, 1);
+                        $contractdata['data']['procurementMethodType'] = $tenderData['data']['procurementMethodType'] ?? '';
+                        $elastic->indexContractPrz($contractdata['data'], self::CDU_ALIAS);
                     }
 
                     DB::execute('DELETE FROM ' . self::TABLE_CONTRACTS_UPDATES . ' WHERE "contract_id" = ?', [$item['contract_id']]);
