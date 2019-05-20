@@ -37,6 +37,10 @@ class ReindexElasticController extends Controller
         $this->reindexTenders();
 
         $this->reindexContracts();
+
+        $this->reindexComplaints();
+
+        $this->reindexDecision();
     }
 
     /**
