@@ -126,6 +126,63 @@ class ElasticHelper
     /**
      * @return array
      */
+    public static function getComplaintMap()
+    {
+        return [
+            'dynamic'    => 'strict',
+            '_all'       => ['enabled' => false],
+            'properties' => [
+                'Nr de intrare'           => ['type' => 'keyword'],
+                'STATUS'                  => ['type' => 'keyword'],
+                'AutoritateaContractanta' => ['type' => 'text'],
+                'Tip procedura'           => ['type' => 'keyword'],
+                'DataIntrare'             => ['type' => 'keyword'],
+                'Obiectul Achiziției'     => ['type' => 'text'],
+                'id'                      => ['type' => 'integer'],
+                'NrProcedurii'            => ['type' => 'keyword'],
+                'Contestatar'             => ['type' => 'text'],
+                'Obiectul Contestației'   => ['type' => 'text'],
+                'COMPLET'                 => ['type' => 'keyword'],
+                'Număr de ieșire'         => ['type' => 'keyword'],
+                '_version_'               => ['type' => 'keyword'],
+                'timestamp'               => ['type' => 'date'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getDecisionMap()
+    {
+        return [
+            'dynamic'    => 'strict',
+            '_all'       => ['enabled' => false],
+            'properties' => [
+                'ElementeleContestatiei'  => ['type' => 'text'],
+                'DataDecizie'             => ['type' => 'keyword'],
+                'NRContestatie'           => ['type' => 'keyword'],
+                'ContinutulDeciziei'      => ['type' => 'text'],
+                'NrProcedurii'            => ['type' => 'keyword'],
+                'TipProcedura'            => ['type' => 'keyword'],
+                'Complet'                 => ['type' => 'keyword'],
+                'StatutDecizie'           => ['type' => 'keyword'],
+                'id'                      => ['type' => 'integer'],
+                'ObiectulAchizitiei'      => ['type' => 'text'],
+                'ObiectulContestatiei'    => ['type' => 'text'],
+                'AutoritateaContractanta' => ['type' => 'text'],
+                'Contestatar'             => ['type' => 'text'],
+                'NrDecizie'               => ['type' => 'keyword'],
+                'ExecutareaDeciziilor'    => ['type' => 'keyword'],
+                '_version_'               => ['type' => 'keyword'],
+                'timestamp'               => ['type' => 'date'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public static function getCpvMap() {
         $mapArr = [
             'dynamic' => 'strict',
