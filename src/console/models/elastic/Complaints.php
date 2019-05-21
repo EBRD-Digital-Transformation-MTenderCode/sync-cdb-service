@@ -73,5 +73,6 @@ class Complaints
     public function truncate()
     {
         self::getDb()->createCommand('TRUNCATE complaints')->execute();
+        self::getDb()->createCommand("UPDATE last_update_time SET updated_at = NULL, offset_time = NULL WHERE id = 'complaints'")->execute();
     }
 }
