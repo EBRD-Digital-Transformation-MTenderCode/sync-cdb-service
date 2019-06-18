@@ -31,6 +31,13 @@ return [
             'password' => '{{environments_DB_PASSWORD}}',
             'charset' => 'utf8',
         ],
+        'db_complaints' => [
+            'class' => Connection::class,
+            'dsn' => 'pgsql:host={{environments_DB_HOST}};port={{environments_DB_PORT}};dbname={{environments_DB_COMPLAINTS_NAME}}',
+            'username' => '{{environments_DB_USERNAME}}',
+            'password' => '{{environments_DB_PASSWORD}}',
+            'charset' => 'utf8',
+        ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
             'viewPath' => '@common/mail',

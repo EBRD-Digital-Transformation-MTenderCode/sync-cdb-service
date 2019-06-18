@@ -126,6 +126,63 @@ class ElasticHelper
     /**
      * @return array
      */
+    public static function getComplaintMap()
+    {
+        return [
+            'dynamic'    => 'strict',
+            '_all'       => ['enabled' => false],
+            'properties' => [
+                'Nr de intrare'           => ['type' => 'keyword'],
+                'STATUS'                  => ['type' => 'keyword'],
+                'AutoritateaContractanta' => ['type' => 'text'],
+                'Tip procedura'           => ['type' => 'keyword'],
+                'DataIntrare'             => ['type' => 'keyword'],
+                'Obiectul Achiziției'     => ['type' => 'text'],
+                'id'                      => ['type' => 'integer'],
+                'NrProcedurii'            => ['type' => 'keyword'],
+                'Contestatar'             => ['type' => 'text'],
+                'Obiectul Contestației'   => ['type' => 'text'],
+                'COMPLET'                 => ['type' => 'keyword'],
+                'Număr de ieșire'         => ['type' => 'keyword'],
+                '_version_'               => ['type' => 'keyword'],
+                'timestamp'               => ['type' => 'date'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getDecisionMap()
+    {
+        return [
+            'dynamic'    => 'strict',
+            '_all'       => ['enabled' => false],
+            'properties' => [
+                'ElementeleContestatiei'  => ['type' => 'text'],
+                'DataDecizie'             => ['type' => 'keyword'],
+                'NRContestatie'           => ['type' => 'keyword'],
+                'ContinutulDeciziei'      => ['type' => 'text'],
+                'NrProcedurii'            => ['type' => 'keyword'],
+                'TipProcedura'            => ['type' => 'keyword'],
+                'Complet'                 => ['type' => 'keyword'],
+                'StatutDecizie'           => ['type' => 'keyword'],
+                'id'                      => ['type' => 'integer'],
+                'ObiectulAchizitiei'      => ['type' => 'text'],
+                'ObiectulContestatiei'    => ['type' => 'text'],
+                'AutoritateaContractanta' => ['type' => 'text'],
+                'Contestatar'             => ['type' => 'text'],
+                'NrDecizie'               => ['type' => 'keyword'],
+                'ExecutareaDeciziilor'    => ['type' => 'keyword'],
+                '_version_'               => ['type' => 'keyword'],
+                'timestamp'               => ['type' => 'date'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public static function getCpvMap() {
         $mapArr = [
             'dynamic' => 'strict',
@@ -439,7 +496,7 @@ class ElasticHelper
         $procedureType = $data['data']['procurementMethodType'] ?? '';
 
         if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
-            $procedureType = self::PROCEDURE_TYPE_SV;
+            $procedureType = self::PROCEDURE_TYPE_MV;
         }
 
         $procedureStatus = $data['data']['status'] ?? '';
@@ -658,10 +715,7 @@ class ElasticHelper
         return $docArr;
     }
 
-    public static function prepareContractPrzToElastic($contract, $cdb) {
-        $response = $contract['response'];
-        $data = json_decode($response, 1);
-        $data = $data['data'];
+    public static function prepareContractPrzToElastic($data, $cdb) {
         $id = $data['id'];
         $periodDeliveryFrom = [];
         $periodDeliveryTo = [];
@@ -669,14 +723,22 @@ class ElasticHelper
 
         $entityId = $data['contractID'];
         $modifiedDate = $data['dateModified'] ?? null;
-        $procedureType = $data['documents']['procurementMethodType'] ?? '';
+
+        $procedureType = $data['procurementMethodType'] ?? '';
+
+        if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
+            $procedureType = self::PROCEDURE_TYPE_MV;
+        }
+
         $procedureStatus = $data['status'];
+        $buyerRegion = $data['procuringEntity']['address']['region'] ?? '';
         $amount = $data['value']['amount'] ?? 0;
         $titlesOrDescriptions = [];
         $title = '';
         $description = '';
         $buyerName = '';
         $buyersNames = [];
+        $deliveriesRegions = [];
 
         $titlesOrDescriptions[$entityId] = $entityId;
 
@@ -693,19 +755,23 @@ class ElasticHelper
         if (!empty($data['classification']['title'])) {
             $titlesOrDescriptions[$data['classification']['title']] = $data['classification']['title'];
         }
+
         if (!empty($data['classification']['description'])) {
             $titlesOrDescriptions[$data['classification']['description']] = $data['classification']['description'];
         }
+
         if (isset($data['lots']) && is_array($data['lots'])) {
             foreach ($data['lots'] as $item) {
                 if (!empty(($item['title']))) {
                     $titlesOrDescriptions[$item['title']] = $item['title'];
                 }
+
                 if (!empty($item['description'])) {
                     $titlesOrDescriptions[$item['description']] = $item['description'];
                 }
             }
         }
+
         if (isset($data['items']) && is_array($data['items'])) {
             foreach ($data['items'] as $item) {
                 if (!empty($item['description'])) {
@@ -718,6 +784,10 @@ class ElasticHelper
 
                 if (!empty($item['deliveryDate']['endDate'])) {
                     $periodDeliveryTo[$item['deliveryDate']['endDate']] = $item['deliveryDate']['endDate'];
+                }
+
+                if (!empty($item['deliveryAddress']['region'])) {
+                    $deliveriesRegions[$item['deliveryAddress']['region']] = $item['deliveryAddress']['region'];
                 }
 
                 $classifications[] = $item['classification']['id'] ?? '';
@@ -749,6 +819,7 @@ class ElasticHelper
             'description'                => $description,
             'titlesOrDescriptions'       => array_values($titlesOrDescriptions),
             'titlesOrDescriptionsStrict' => array_values($titlesOrDescriptions),
+            'buyerRegion'                => $buyerRegion,
             'classifications'            => $classifications,
             'modifiedDate'               => $modifiedDate,
             'periodEnquiryFrom'          => $periodContractStartDate,
@@ -757,6 +828,7 @@ class ElasticHelper
             'buyerName'                  => $buyerName,
             'buyersNames'                => array_values($buyersNames),
             'buyerIdentifier'            => $buyerIdentifier,
+            'deliveriesRegions'          => array_values($deliveriesRegions),
         ];
 
         return $docArr;

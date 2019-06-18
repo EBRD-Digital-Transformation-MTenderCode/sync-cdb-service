@@ -104,7 +104,7 @@ class ElasticComponent
                 'periodPlanningTo' => ['type' => 'date'],
                 'modifiedDate' => ['type' => 'date'],
                 'buyerName' => ['type' => 'text'],
-                'buyersNames' => ['type' => 'text'],
+                'buyersNames' => ['type' => 'text', 'analyzer' => 'ngram_analyzer'],
                 'buyerIdentifier' => ['type' => 'keyword'],
                 'buyerType' => ['type' => 'keyword'],
                 'buyerMainGeneralActivity' => ['type' => 'keyword'],
@@ -139,6 +139,34 @@ class ElasticComponent
     {
         Yii::info("Mapping contracts", 'console-msg');
         $mapArr = ElasticHelper::getTenderMap();
+        $jsonMap = json_encode($mapArr);
+
+        return $this->createMapping($jsonMap);
+    }
+
+    /**
+     * Complaints mapping
+     * @return array
+     * @throws HttpException
+     */
+    public function complaintsMapping()
+    {
+        Yii::info("Mapping complaints", 'console-msg');
+        $mapArr = ElasticHelper::getComplaintMap();
+        $jsonMap = json_encode($mapArr);
+
+        return $this->createMapping($jsonMap);
+    }
+
+    /**
+     * Decision mapping
+     * @return array
+     * @throws HttpException
+     */
+    public function decisionsMapping()
+    {
+        Yii::info("Mapping decisions", 'console-msg');
+        $mapArr = ElasticHelper::getDecisionMap();
         $jsonMap = json_encode($mapArr);
 
         return $this->createMapping($jsonMap);
@@ -315,12 +343,28 @@ class ElasticComponent
 
     /**
      * Index prozorro contract
-     * @param $contract
+     * @param $data
      * @param $cdb
      */
-    public function indexContractPrz($contract, $cdb) {
-        $docArr = ElasticHelper::prepareContractPrzToElastic($contract, $cdb);
+    public function indexContractPrz($data, $cdb) {
+        $docArr = ElasticHelper::prepareContractPrzToElastic($data, $cdb);
         $this->indexDoc($docArr, $docArr['id']);
+    }
+
+    /**
+     * Index complaint
+     * @param $data
+     */
+    public function indexComplaint($data) {
+        $this->indexDoc($data, $data['id']);
+    }
+
+    /**
+     * Index decision
+     * @param $data
+     */
+    public function indexDecision($data) {
+        $this->indexDoc($data, $data['id']);
     }
 
     /**

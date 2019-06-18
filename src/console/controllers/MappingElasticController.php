@@ -22,6 +22,8 @@ class MappingElasticController extends Controller
         $this->actionTenders();
         $this->actionPlans();
         $this->actionContracts();
+        $this->actionComplaints();
+        $this->actionDecisions();
 
         Yii::info("Elastic mapping is complete", 'console-msg');
     }
@@ -142,4 +144,61 @@ class MappingElasticController extends Controller
         Yii::info("Contracts mapping is complete", 'console-msg');
     }
 
+    /**
+     * @throws HttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionComplaints()
+    {
+        $elastic_url = Yii::$app->params['elastic_url'];
+        $elastic_index = Yii::$app->params['elastic_complaints_index'];
+        $elastic_type = Yii::$app->params['elastic_complaints_type'];
+        $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
+        $elastic->dropIndex();
+
+        $result = $elastic->setIndexSettings();
+
+        if ((int)$result['code'] != 200) {
+            Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+            exit(0);
+        }
+
+        $result = $elastic->complaintsMapping();
+
+        if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
+            Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
+            exit(0);
+        }
+
+        Yii::info("Complaints mapping is complete", 'console-msg');
+    }
+
+    /**
+     * @throws HttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionDecisions()
+    {
+        $elastic_url = Yii::$app->params['elastic_url'];
+        $elastic_index = Yii::$app->params['elastic_decisions_index'];
+        $elastic_type = Yii::$app->params['elastic_decisions_type'];
+        $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
+        $elastic->dropIndex();
+
+        $result = $elastic->setIndexSettings();
+
+        if ((int)$result['code'] != 200) {
+            Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+            exit(0);
+        }
+
+        $result = $elastic->decisionsMapping();
+
+        if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
+            Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
+            exit(0);
+        }
+
+        Yii::info("Decisions mapping is complete", 'console-msg');
+    }
 }

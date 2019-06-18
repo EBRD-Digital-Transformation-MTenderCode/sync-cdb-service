@@ -118,6 +118,18 @@ then
 ./yii contracts-prz/updates
 fi
 
+if [[ $SERVICENAME == "complaints" ]] || [[ $SERVICENAME == "pp-complaints" ]]
+then
+./yii migrate --migrationPath=@app/migrations/complaints --db=db_complaints --interactive=0
+./yii complaints/complaints
+fi
+
+if [[ $SERVICENAME == "decisions" ]] || [[ $SERVICENAME == "pp-decisions" ]]
+then
+./yii migrate --migrationPath=@app/migrations/complaints --db=db_complaints --interactive=0
+./yii complaints/decisions
+fi
+
 ####### elastic-search-settings
 if [[ $SERVICENAME == "elastic-search-settings" ]] || [[ $SERVICENAME == "pp-elastic-search-settings" ]]
 then

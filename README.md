@@ -13,11 +13,15 @@
 ./yii migrate --migrationPath=@app/migrations/contracts --db=db_contracts
 ./yii migrate --migrationPath=@app/migrations/contracts_prz --db=db_contracts
 
+./yii migrate --migrationPath=@app/migrations/complaints --db=db_complaints
+
 #mapping
 ./yii mapping-elastic/all
 ./yii mapping-elastic/contracts
 ./yii mapping-elastic/tenders
 ./yii mapping-elastic/plans
+./yii mapping-elastic/complaints
+./yii mapping-elastic/decisions
 
 # actions
 ./yii budgets/get-changed-list
@@ -40,6 +44,9 @@
 ./yii contracts-prz/get-updates
 ./yii contracts-prz/updates
 
+./yii complaints/complaints
+./yii complaints/decisions
+
 ./yii cpv/import
 
 # команды для Elastic
@@ -49,15 +56,11 @@
 ./yii reindex-elastic/tenders
 ./yii reindex-elastic/plans
 ./yii reindex-elastic/contracts
+./yii reindex-elastic/complaints
+./yii reindex-elastic/decisions
 
 ./yii reindex-elastic/add-budget %id%
 ./yii reindex-elastic/add-tender %id%
 ./yii reindex-elastic/add-plan-prz %id%
 ./yii reindex-elastic/add-tender-prz %id%
 ./yii reindex-elastic/add-contract-prz %id%
-
-./yii mapping-elastic/all
-./yii mapping-elastic/budgets
-./yii mapping-elastic/tenders
-./yii mapping-elastic/plans
-./yii mapping-elastic/contracts
