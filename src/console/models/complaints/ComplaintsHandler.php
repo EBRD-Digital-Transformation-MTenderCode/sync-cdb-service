@@ -79,15 +79,29 @@ class ComplaintsHandler
 
         if (!empty($data)) {
             foreach ($data as $item) {
-                $id = $item['id'];
-                $tenderId = $item['NrProcedurii'] ?? '';
-                $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
-                $offset = $item['timestamp'];
-                Complaint::handleDb($id, $tenderId, $response);
+                //tenderId filter
+                if (isset($item['NrProcedurii'])
+                    && ((strlen($item['NrProcedurii']) == 28
+                            && substr($item['NrProcedurii'], 0, 4) == 'ocds')
+                        || (strlen($item['NrProcedurii']) == 22
+                            && substr($item['NrProcedurii'], 0, 2) == 'MD'))) {
+                    $id = $item['id'];
+                    $tenderId = $item['NrProcedurii'] ?? '';
+                    $item['registrationDate'] = substr($item['DataIntrare'], 0, 4) . '-'
+                        . substr($item['DataIntrare'], 4, 2) . '-'
+                        . substr($item['DataIntrare'], 6, 2) . 'T'
+                        . substr($item['DataIntrare'], 8, 2) . ':'
+                        . substr($item['DataIntrare'], 10, 2) . ':'
+                        . substr($item['DataIntrare'], 12, 2) . 'Z';
+                    $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
+                    Complaint::handleDb($id, $tenderId, $response);
 
-                if ($elastic_indexing) {
-                    $elastic->indexComplaint($item);
+                    if ($elastic_indexing) {
+                        $elastic->indexComplaint($item);
+                    }
                 }
+
+                $offset = $item['timestamp'];
             }
 
             $countComplaints = count($data);
