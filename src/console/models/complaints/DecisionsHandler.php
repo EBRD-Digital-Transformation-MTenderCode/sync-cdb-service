@@ -78,15 +78,29 @@ class DecisionsHandler
 
         if (!empty($data)) {
             foreach ($data as $item) {
-                $id = $item['id'];
-                $tenderId = $item['NrProcedurii'] ?? '';
-                $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
-                $offset = $item['timestamp'];
-                Decision::handleDb($id, $tenderId, $response);
+                //tenderId filter
+                if (isset($item['NrProcedurii'])
+                    && ((strlen($item['NrProcedurii']) == 28
+                            && substr($item['NrProcedurii'], 0, 4) == 'ocds')
+                        || (strlen($item['NrProcedurii']) == 22
+                            && substr($item['NrProcedurii'], 0, 2) == 'MD'))) {
+                    $id = $item['id'];
+                    $tenderId = $item['NrProcedurii'] ?? '';
+                    $item['registrationDate'] = substr($item['DataDecizie'], 0, 4) . '-'
+                        . substr($item['DataDecizie'], 4, 2) . '-'
+                        . substr($item['DataDecizie'], 6, 2) . 'T'
+                        . substr($item['DataDecizie'], 8, 2) . ':'
+                        . substr($item['DataDecizie'], 10, 2) . ':'
+                        . substr($item['DataDecizie'], 12, 2) . 'Z';
+                    $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
+                    Decision::handleDb($id, $tenderId, $response);
 
-                if ($elastic_indexing) {
-                    $elastic->indexDecision($item);
+                    if ($elastic_indexing) {
+                        $elastic->indexDecision($item);
+                    }
                 }
+
+                $offset = $item['timestamp'];
             }
 
             $countDecisions = count($data);

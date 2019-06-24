@@ -146,6 +146,7 @@ class ElasticHelper
                 'Număr de ieșire'         => ['type' => 'keyword'],
                 '_version_'               => ['type' => 'keyword'],
                 'timestamp'               => ['type' => 'date'],
+                'registrationDate'        => ['type' => 'date'],
             ],
         ];
     }
@@ -176,6 +177,7 @@ class ElasticHelper
                 'ExecutareaDeciziilor'    => ['type' => 'keyword'],
                 '_version_'               => ['type' => 'keyword'],
                 'timestamp'               => ['type' => 'date'],
+                'registrationDate'        => ['type' => 'date'],
             ],
         ];
     }
