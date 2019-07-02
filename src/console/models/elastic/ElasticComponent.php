@@ -352,11 +352,117 @@ class ElasticComponent
     }
 
     /**
+     * Generate complaints registrationDate
+     * @param $data
+     * @return mixed
+     */
+    public function setRegistrationDateComplaints($data) {
+        $delay = (int) Yii::$app->params['sleep_error_interval'];
+        $countForPeriod = 0;
+        $Y = substr($data['DataIntrare'], 0, 4);
+        $m = substr($data['DataIntrare'], 4, 2);
+        $d = substr($data['DataIntrare'], 6, 2);
+        $H = substr($data['DataIntrare'], 8, 2);
+        $i = substr($data['DataIntrare'], 10, 2);
+        $s = substr($data['DataIntrare'], 12, 2);
+        $shortDate = $Y . '-' . $m . '-' . $d . 'T' . $H . ':' . $i . ':' . $s;
+
+        try {
+            $data_string = '{"query":{"bool":{
+                "filter":[
+                    {"range":{"registrationDate":{"gte":"' . $shortDate . '.000Z","lte":"' . $shortDate . '.999Z"}}}
+                ],  
+                "must_not":{"term":{"id":"' . $data['id'] . '"}}
+            }}}';
+            $curl_options = ['HTTPHEADER' => ['Content-Type:application/json']];
+            $result = Curl::sendRequest($this->getTypePath() . '_search',"GET", $data_string, $curl_options);
+
+            if ($result['code'] != 200 && $result['code'] != 201 && $result['code'] != 100) {
+                Yii::error("Elastic indexing error. Http-code: " . $result['code'], 'sync-info');
+                sleep($delay);
+            }
+
+            $resultBody = json_decode($result['body'], true);
+            $countForPeriod = $resultBody['hits']['total'] ?? 0;
+        } catch (HttpException $exception) {
+            Yii::error('Elastic error. CURL ERROR[' . $exception->getCode() . ']. ' . $exception->getMessage(), 'sync-info');
+            sleep($delay);
+        }
+
+        $countForPeriod++;
+
+        if ($countForPeriod > 999) {
+            $countForPeriod = 999;
+        }
+
+        while (strlen($countForPeriod) < 3) {
+            $countForPeriod = '0' . $countForPeriod;
+        }
+
+        $data['registrationDate'] = $shortDate . '.' . $countForPeriod . 'Z';
+
+        return $data;
+    }
+
+    /**
      * Index complaint
      * @param $data
      */
     public function indexComplaint($data) {
         $this->indexDoc($data, $data['id']);
+    }
+
+    /**
+     * Generate decisions registrationDate
+     * @param $data
+     * @return mixed
+     */
+    public function setRegistrationDateDecisions($data) {
+        $delay = (int) Yii::$app->params['sleep_error_interval'];
+        $countForPeriod = 0;
+        $Y = substr($data['DataDecizie'], 0, 4);
+        $m = substr($data['DataDecizie'], 4, 2);
+        $d = substr($data['DataDecizie'], 6, 2);
+        $H = substr($data['DataDecizie'], 8, 2);
+        $i = substr($data['DataDecizie'], 10, 2);
+        $s = substr($data['DataDecizie'], 12, 2);
+        $shortDate = $Y . '-' . $m . '-' . $d . 'T' . $H . ':' . $i . ':' . $s;
+
+        try {
+            $data_string = '{"query":{"bool":{
+                "filter":[
+                    {"range":{"registrationDate":{"gte":"' . $shortDate . '.000Z","lte":"' . $shortDate . '.999Z"}}}
+                ],  
+                "must_not":{"term":{"id":"' . $data['id'] . '"}}
+            }}}';
+            $curl_options = ['HTTPHEADER' => ['Content-Type:application/json']];
+            $result = Curl::sendRequest($this->getTypePath() . '_search',"GET", $data_string, $curl_options);
+
+            if ($result['code'] != 200 && $result['code'] != 201 && $result['code'] != 100) {
+                Yii::error("Elastic indexing error. Http-code: " . $result['code'], 'sync-info');
+                sleep($delay);
+            }
+
+            $resultBody = json_decode($result['body'], true);
+            $countForPeriod = $resultBody['hits']['total'] ?? 0;
+        } catch (HttpException $exception) {
+            Yii::error('Elastic error. CURL ERROR[' . $exception->getCode() . ']. ' . $exception->getMessage(), 'sync-info');
+            sleep($delay);
+        }
+
+        $countForPeriod++;
+
+        if ($countForPeriod > 999) {
+            $countForPeriod = 999;
+        }
+
+        while (strlen($countForPeriod) < 3) {
+            $countForPeriod = '0' . $countForPeriod;
+        }
+
+        $data['registrationDate'] = $shortDate . '.' . $countForPeriod . 'Z';
+
+        return $data;
     }
 
     /**
