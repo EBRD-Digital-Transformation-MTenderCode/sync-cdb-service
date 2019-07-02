@@ -87,16 +87,11 @@ class ComplaintsHandler
                             && substr($item['NrProcedurii'], 0, 2) == 'MD'))) {
                     $id = $item['id'];
                     $tenderId = $item['NrProcedurii'] ?? '';
-                    $item['registrationDate'] = substr($item['DataIntrare'], 0, 4) . '-'
-                        . substr($item['DataIntrare'], 4, 2) . '-'
-                        . substr($item['DataIntrare'], 6, 2) . 'T'
-                        . substr($item['DataIntrare'], 8, 2) . ':'
-                        . substr($item['DataIntrare'], 10, 2) . ':'
-                        . substr($item['DataIntrare'], 12, 2) . 'Z';
-                    $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
-                    Complaint::handleDb($id, $tenderId, $response);
 
                     if ($elastic_indexing) {
+                        $item = $elastic->setRegistrationDateComplaints($item);
+                        $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
+                        Complaint::handleDb($id, $tenderId, $response);
                         $elastic->indexComplaint($item);
                     }
                 }

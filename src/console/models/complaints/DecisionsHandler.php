@@ -86,16 +86,11 @@ class DecisionsHandler
                             && substr($item['NrProcedurii'], 0, 2) == 'MD'))) {
                     $id = $item['id'];
                     $tenderId = $item['NrProcedurii'] ?? '';
-                    $item['registrationDate'] = substr($item['DataDecizie'], 0, 4) . '-'
-                        . substr($item['DataDecizie'], 4, 2) . '-'
-                        . substr($item['DataDecizie'], 6, 2) . 'T'
-                        . substr($item['DataDecizie'], 8, 2) . ':'
-                        . substr($item['DataDecizie'], 10, 2) . ':'
-                        . substr($item['DataDecizie'], 12, 2) . 'Z';
-                    $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
-                    Decision::handleDb($id, $tenderId, $response);
 
                     if ($elastic_indexing) {
+                        $item = $elastic->setRegistrationDateDecisions($item);
+                        $response = json_encode($item, JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
+                        Decision::handleDb($id, $tenderId, $response);
                         $elastic->indexDecision($item);
                     }
                 }
