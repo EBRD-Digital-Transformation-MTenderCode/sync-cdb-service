@@ -21,7 +21,6 @@
 ./yii mapping-elastic/tenders
 ./yii mapping-elastic/plans
 ./yii mapping-elastic/complaints
-./yii mapping-elastic/decisions
 
 # actions
 ./yii budgets/get-changed-list
@@ -57,7 +56,6 @@
 ./yii reindex-elastic/plans
 ./yii reindex-elastic/contracts
 ./yii reindex-elastic/complaints
-./yii reindex-elastic/decisions
 
 ./yii reindex-elastic/add-budget %id%
 ./yii reindex-elastic/add-tender %id%
