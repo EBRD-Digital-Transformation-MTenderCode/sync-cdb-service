@@ -145,6 +145,20 @@ class ElasticComponent
     }
 
     /**
+     * Proceedings mapping
+     * @return array
+     * @throws HttpException
+     */
+    public function proceedingsMapping()
+    {
+        Yii::info("Mapping proceedings", 'console-msg');
+        $mapArr = ElasticHelper::getProceedingMap();
+        $jsonMap = json_encode($mapArr);
+
+        return $this->createMapping($jsonMap);
+    }
+
+    /**
      * Complaints mapping
      * @return array
      * @throws HttpException
@@ -349,6 +363,14 @@ class ElasticComponent
     public function indexContractPrz($data, $cdb) {
         $docArr = ElasticHelper::prepareContractPrzToElastic($data, $cdb);
         $this->indexDoc($docArr, $docArr['id']);
+    }
+
+    /**
+     * Index proceeding
+     * @param $data
+     */
+    public function indexProceeding($data) {
+        $this->indexDoc($data, $data['ocid']);
     }
 
     /**

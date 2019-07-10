@@ -126,6 +126,21 @@ class ElasticHelper
     /**
      * @return array
      */
+    public static function getProceedingMap()
+    {
+        return [
+            'dynamic'    => 'strict',
+            '_all'       => ['enabled' => false],
+            'properties' => [
+                'ocid' => ['type' => 'keyword'],
+                'date' => ['type' => 'date'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public static function getComplaintMap()
     {
         return [
@@ -146,6 +161,7 @@ class ElasticHelper
                 'Număr de ieșire'         => ['type' => 'keyword'],
                 '_version_'               => ['type' => 'keyword'],
                 'timestamp'               => ['type' => 'date'],
+                'modificationDate'        => ['type' => 'date'],
             ],
         ];
     }
@@ -176,6 +192,7 @@ class ElasticHelper
                 'ExecutareaDeciziilor'    => ['type' => 'keyword'],
                 '_version_'               => ['type' => 'keyword'],
                 'timestamp'               => ['type' => 'date'],
+                'modificationDate'        => ['type' => 'date'],
             ],
         ];
     }

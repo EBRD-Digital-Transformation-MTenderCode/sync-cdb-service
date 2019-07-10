@@ -41,8 +41,6 @@ class ReindexElasticController extends Controller
         $this->reindexContracts();
 
         $this->reindexComplaints();
-
-        $this->reindexDecisions();
     }
 
     /**
@@ -414,6 +412,37 @@ class ReindexElasticController extends Controller
     private function reindexComplaints()
     {
         $elastic_url = Yii::$app->params['elastic_url'];
+
+        //reindex proceedings
+        $elastic_index = Yii::$app->params['elastic_proceedings_index'];
+        $elastic_type = Yii::$app->params['elastic_proceedings_type'];
+
+        try {
+            $elastic = new ElasticComponent($elastic_url, $elastic_index, $elastic_type);
+            $result = $elastic->dropIndex();
+
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 404) {
+                Yii::error("Elastic index " . $elastic_index . " error. Code: " . $result['code'], 'console-msg');
+                exit(0);
+            }
+
+            $result = $elastic->setIndexSettings();
+            if ((int)$result['code'] != 200) {
+                Yii::error("Elastic set setting " . $elastic_index . " error", 'console-msg');
+                exit(0);
+            }
+
+            $result = $elastic->proceedingsMapping();
+            if ((int)$result['code'] != 200 && (int)$result['code'] != 100) {
+                Yii::error("Elastic mapping " . $elastic_index . " error", 'console-msg');
+                exit(0);
+            }
+        } catch (HttpException $e) {
+            Yii::error($e->getMessage(), 'console-msg');
+            exit(0);
+        }
+
+        //reindex complaints
         $elastic_index = Yii::$app->params['elastic_complaints_index'];
         $elastic_type = Yii::$app->params['elastic_complaints_type'];
 
@@ -451,15 +480,8 @@ class ReindexElasticController extends Controller
             Yii::error($e->getMessage(), 'console-msg');
             exit(0);
         }
-    }
 
-    /**
-     * reindex decisions
-     * @throws \yii\db\Exception
-     */
-    private function reindexDecisions()
-    {
-        $elastic_url = Yii::$app->params['elastic_url'];
+        //reindex decisions
         $elastic_index = Yii::$app->params['elastic_decisions_index'];
         $elastic_type = Yii::$app->params['elastic_decisions_type'];
 
