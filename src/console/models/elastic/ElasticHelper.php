@@ -7,14 +7,15 @@ class ElasticHelper
 {
     const ROLE_BUYER = 'buyer';
 
-    const PROCEDURE_TYPE_MV              = 'mv';
-    const PROCEDURE_TYPE_SV              = 'sv';
-    const PROCEDURE_TYPE_OT              = 'ot';
-    const PROCEDURE_TYPE_BELOW_THRESHOLD = 'belowThreshold';
-    const PROCEDURE_TYPE_PRICE_PROPOSALS = 'priceProposals';
-    const PROCEDURE_TYPE_ABOVE_THRESHOLD = 'aboveThreshold';
-    const PROCEDURE_OWNERSHIP_GOVERMENT  = 'government';
-    const PROCEDURE_OWNERSHIP_COMMERCIAL = 'commercial';
+    const PROCEDURE_TYPE_MICRO_VALUE                 = 'microValue';
+    const PROCEDURE_TYPE_REQUEST_FOR_PRICE_QUOTATION = 'requestForPriceQuotation';
+    const PROCEDURE_TYPE_SMALL_VALUE                 = 'smallValue';
+    const PROCEDURE_TYPE_OPEN_TENDER                 = 'openTender';
+    const PROCEDURE_TYPE_BELOW_THRESHOLD             = 'belowThreshold';
+    const PROCEDURE_TYPE_PRICE_PROPOSALS             = 'priceProposals';
+    const PROCEDURE_TYPE_ABOVE_THRESHOLD             = 'aboveThreshold';
+    const PROCEDURE_OWNERSHIP_GOVERMENT              = 'government';
+    const PROCEDURE_OWNERSHIP_COMMERCIAL             = 'commercial';
 
     const PROCUREMENT_CATEGORY_GOODS    = 'goods';
     const PROCUREMENT_CATEGORY_SERVICES = 'services';
@@ -308,29 +309,37 @@ class ElasticHelper
             $amount = $ms['compiledRelease']['tender']['value']['amount'] ?? 0;
 
             $procedureOwnership = self::PROCEDURE_OWNERSHIP_GOVERMENT;
-            $procedureType = self::PROCEDURE_TYPE_OT;
+            $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
 
-            switch ($mainProcurementCategory) {
+            if ($procedureType == self::PROCEDURE_TYPE_SMALL_VALUE) {
+                if (
+                    (($mainProcurementCategory == self::PROCUREMENT_CATEGORY_GOODS || $mainProcurementCategory == self::PROCUREMENT_CATEGORY_SERVICES) && $amount < 800000) ||
+                    ($mainProcurementCategory == self::PROCUREMENT_CATEGORY_WORKS && $amount < 2000000)
+                ) {
+                    $procedureType = self::PROCEDURE_TYPE_REQUEST_FOR_PRICE_QUOTATION;
+                }
+            }
+            /*switch ($mainProcurementCategory) {
                 case self::PROCUREMENT_CATEGORY_GOODS:
                 case self::PROCUREMENT_CATEGORY_SERVICES:
                     if ($amount <= 400000) {
-                        $procedureType = self::PROCEDURE_TYPE_SV;
+                        $procedureType = self::PROCEDURE_TYPE_SMALL_VALUE;
                     }
 
                     if ($amount < 80000) {
-                        $procedureType = self::PROCEDURE_TYPE_MV;
+                        $procedureType = self::PROCEDURE_TYPE_MICRO_VALUE;
                     }
                     break;
                 case self::PROCUREMENT_CATEGORY_WORKS:
                     if ($amount <= 1500000) {
-                        $procedureType = self::PROCEDURE_TYPE_SV;
+                        $procedureType = self::PROCEDURE_TYPE_SMALL_VALUE;
                     }
 
                     if ($amount < 100000) {
-                        $procedureType = self::PROCEDURE_TYPE_MV;
+                        $procedureType = self::PROCEDURE_TYPE_MICRO_VALUE;
                     }
                     break;
-            }
+            }*/
 
             $currency = $ms['compiledRelease']['tender']['value']['currency'] ?? '';
             $publishedDate = $tender['releasePackage']['publishedDate'] ?? null;
@@ -513,7 +522,7 @@ class ElasticHelper
         $procedureType = $data['data']['procurementMethodType'] ?? '';
 
         if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
-            $procedureType = self::PROCEDURE_TYPE_MV;
+            $procedureType = self::PROCEDURE_TYPE_MICRO_VALUE;
         }
 
         $procedureStatus = $data['data']['status'] ?? '';
@@ -632,15 +641,15 @@ class ElasticHelper
         $procedureType = $data['tender']['procurementMethodType'] ?? '';
 
         if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
-            $procedureType = self::PROCEDURE_TYPE_MV;
+            $procedureType = self::PROCEDURE_TYPE_MICRO_VALUE;
         }
 
         if ($procedureType == self::PROCEDURE_TYPE_PRICE_PROPOSALS) {
-            $procedureType = self::PROCEDURE_TYPE_SV;
+            $procedureType = self::PROCEDURE_TYPE_REQUEST_FOR_PRICE_QUOTATION;
         }
 
         if ($procedureType == self::PROCEDURE_TYPE_ABOVE_THRESHOLD) {
-            $procedureType = self::PROCEDURE_TYPE_OT;
+            $procedureType = self::PROCEDURE_TYPE_OPEN_TENDER;
         }
 
         $amount = $data['budget']['amount'] ?? 0;
@@ -744,7 +753,7 @@ class ElasticHelper
         $procedureType = $data['procurementMethodType'] ?? '';
 
         if ($procedureType == self::PROCEDURE_TYPE_BELOW_THRESHOLD) {
-            $procedureType = self::PROCEDURE_TYPE_MV;
+            $procedureType = self::PROCEDURE_TYPE_MICRO_VALUE;
         }
 
         $procedureStatus = $data['status'];
