@@ -310,6 +310,18 @@ class ElasticHelper
             $procedureOwnership = self::PROCEDURE_OWNERSHIP_GOVERMENT;
             $procedureType = $ms['compiledRelease']['tender']['procurementMethodDetails'] ?? '';
 
+            if ($procedureType == "Procedura micro-valorii") {
+                $procedureType = self::PROCEDURE_TYPE_MICRO_VALUE;
+            }
+
+            if ($procedureType == "Procedura de valoare mică") {
+                $procedureType = self::PROCEDURE_TYPE_SMALL_VALUE;
+            }
+
+            if ($procedureType == "Licitație deschisă") {
+                $procedureType = self::PROCEDURE_TYPE_OPEN_TENDER;
+            }
+
             if ($procedureType == self::PROCEDURE_TYPE_SMALL_VALUE) {
                 if (
                     (($mainProcurementCategory == self::PROCUREMENT_CATEGORY_GOODS || $mainProcurementCategory == self::PROCUREMENT_CATEGORY_SERVICES) && $amount >= 800000) ||
