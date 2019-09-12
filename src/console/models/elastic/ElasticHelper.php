@@ -644,7 +644,7 @@ class ElasticHelper
         }
 
         if ($procedureType == self::PROCEDURE_TYPE_PRICE_PROPOSALS) {
-            $procedureType = self::PROCEDURE_TYPE_REQUEST_FOR_PRICE_QUOTATION;
+            $procedureType = self::PROCEDURE_TYPE_SMALL_VALUE;
         }
 
         if ($procedureType == self::PROCEDURE_TYPE_ABOVE_THRESHOLD) {
