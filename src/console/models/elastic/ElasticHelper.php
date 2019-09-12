@@ -8,7 +8,6 @@ class ElasticHelper
     const ROLE_BUYER = 'buyer';
 
     const PROCEDURE_TYPE_MICRO_VALUE                 = 'microValue';
-    const PROCEDURE_TYPE_REQUEST_FOR_PRICE_QUOTATION = 'requestForPriceQuotation';
     const PROCEDURE_TYPE_SMALL_VALUE                 = 'smallValue';
     const PROCEDURE_TYPE_OPEN_TENDER                 = 'openTender';
     const PROCEDURE_TYPE_BELOW_THRESHOLD             = 'belowThreshold';
@@ -313,10 +312,10 @@ class ElasticHelper
 
             if ($procedureType == self::PROCEDURE_TYPE_SMALL_VALUE) {
                 if (
-                    (($mainProcurementCategory == self::PROCUREMENT_CATEGORY_GOODS || $mainProcurementCategory == self::PROCUREMENT_CATEGORY_SERVICES) && $amount < 800000) ||
-                    ($mainProcurementCategory == self::PROCUREMENT_CATEGORY_WORKS && $amount < 2000000)
+                    (($mainProcurementCategory == self::PROCUREMENT_CATEGORY_GOODS || $mainProcurementCategory == self::PROCUREMENT_CATEGORY_SERVICES) && $amount >= 800000) ||
+                    ($mainProcurementCategory == self::PROCUREMENT_CATEGORY_WORKS && $amount >= 2000000)
                 ) {
-                    $procedureType = self::PROCEDURE_TYPE_REQUEST_FOR_PRICE_QUOTATION;
+                    $procedureType = self::PROCEDURE_TYPE_OPEN_TENDER;
                 }
             }
             /*switch ($mainProcurementCategory) {
