@@ -314,7 +314,7 @@ class ElasticHelper
                 $procedureType = self::PROCEDURE_TYPE_MICRO_VALUE;
             }
 
-            if ($procedureType == "Procedura de valoare mică") {
+            if ($procedureType == "Procedură de valoare mică") {
                 $procedureType = self::PROCEDURE_TYPE_SMALL_VALUE;
             }
 
